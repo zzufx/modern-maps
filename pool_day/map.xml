@@ -186,8 +186,8 @@
             <replace material="air"/>
         </replace-item>
     </action>
-    <trigger action="increment-round-t1" scope="player" filter="any(all(any(round_status=2,round_status=1),red-cap),all(any(round_status=2,round_status=1),can-score,no-reds))"/>
-    <trigger action="increment-round-t2" scope="player" filter="any(all(any(round_status=2,round_status=1),blue-cap),all(any(round_status=2,round_status=1),can-score,no-blues))"/>
+    <trigger action="increment-score-t1" scope="player" filter="any(all(any(round_status=2,round_status=1),red-cap),all(any(round_status=2,round_status=1),can-score,no-reds))"/>
+    <trigger action="increment-score-t2" scope="player" filter="any(all(any(round_status=2,round_status=1),blue-cap),all(any(round_status=2,round_status=1),can-score,no-blues))"/>
     <trigger action="increment-round-custom" scope="player" filter="any(all(any(round_status=2,round_status=1),red-cap),all(any(round_status=2,round_status=1),can-score,no-reds))"/>
     <trigger action="increment-round-custom" scope="player" filter="any(all(any(round_status=2,round_status=1),blue-cap),all(any(round_status=2,round_status=1),can-score,no-blues))"/>
 </actions>
