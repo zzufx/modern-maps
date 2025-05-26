@@ -184,10 +184,10 @@
             <replace material="air"/>
         </replace-item>
     </action>
-    <trigger action="increment-score-t1" scope="match" filter="any(all(red-cap),all(can-score,no-reds))"/>
-    <trigger action="increment-score-t2" scope="match" filter="any(all(blue-cap),all(can-score,no-blues))"/>
-    <trigger action="increment-round-custom" scope="player" filter="any(all(red-cap),all(can-score,no-reds))"/>
-    <trigger action="increment-round-custom" scope="player" filter="any(all(blue-cap),all(can-score,no-blues))"/>
+    <trigger action="increment-score-t1" scope="match" filter="any(all(red-cap),all(can-score,no-blues))"/>
+    <trigger action="increment-score-t2" scope="match" filter="any(all(blue-cap),all(can-score,no-reds))"/>
+    <trigger action="increment-round-custom" scope="player" filter="any(all(red-cap),all(can-score,no-blues))"/>
+    <trigger action="increment-round-custom" scope="player" filter="any(all(blue-cap),all(can-score,no-reds))"/>
 </actions>
 <itemkeep>
     <item>stone sword</item>
