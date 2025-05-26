@@ -80,6 +80,7 @@
                     <region id="everywhere"/>
                     <team>team-one</team>
                     <alive/>
+                    <filter id="can-score"/>
                 </all>
             </players>
         </not>
@@ -92,6 +93,7 @@
                     <region id="everywhere"/>
                     <team>team-two</team>
                     <alive/>
+                    <filter id="can-score"/>
                 </all>
             </players>
         </not>
