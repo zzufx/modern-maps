@@ -157,6 +157,21 @@
     </apply>
 </regions>
 <actions>
+    <action id="increment-round-custom" scope="player">
+        <switch-scope outer="player" inner="match">
+            <set var="can_score" value="0"/>
+            <set var="round_status" value="1"/>
+            <action id="set-buytime"/>
+            <kill-entities filter="remove-entities"/>
+        </switch-scope>
+        <action id="tiebreaker-win"/>
+    </action>
+    <action id="increment-score-t1" scope="match">
+        <set var="team_one_score" value="team_one_score+1"/>
+    </action>
+    <action id="increment-score-t2" scope="match">
+        <set var="team_two_score" value="team_two_score+1"/>
+    </action>
     <action id="clear-pool-kit" scope="player">
         <replace-item ignore-metadata="true">
             <find material="stone sword"/>
@@ -171,8 +186,10 @@
             <replace material="air"/>
         </replace-item>
     </action>
-    <trigger action="increment-round" scope="player" filter="any(all(any(round_status=2,round_status=1),red-cap),all(any(round_status=2,round_status=1),can-score,no-reds))"/>
-    <trigger action="increment-round" scope="player" filter="any(all(any(round_status=2,round_status=1),blue-cap),all(any(round_status=2,round_status=1),can-score,no-blues))"/>
+    <trigger action="increment-round-t1" scope="player" filter="any(all(any(round_status=2,round_status=1),red-cap),all(any(round_status=2,round_status=1),can-score,no-reds))"/>
+    <trigger action="increment-round-t2" scope="player" filter="any(all(any(round_status=2,round_status=1),blue-cap),all(any(round_status=2,round_status=1),can-score,no-blues))"/>
+    <trigger action="increment-round-custom" scope="player" filter="any(all(any(round_status=2,round_status=1),red-cap),all(any(round_status=2,round_status=1),can-score,no-reds))"/>
+    <trigger action="increment-round-custom" scope="player" filter="any(all(any(round_status=2,round_status=1),blue-cap),all(any(round_status=2,round_status=1),can-score,no-blues))"/>
 </actions>
 <itemkeep>
     <item>stone sword</item>
