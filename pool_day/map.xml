@@ -102,6 +102,7 @@
                 <all>
                     <region id="pool"/>
                     <team>team-one</team>
+                    <alive/>
                 </all>
             </players>
             <not>
@@ -109,6 +110,7 @@
                     <all>
                         <region id="pool"/>
                         <team>team-two</team>
+                        <alive/>
                     </all>
                 </players>
             </not>
