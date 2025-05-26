@@ -167,10 +167,8 @@
             <replace material="air"/>
         </replace-item>
     </action>
-    <trigger action="increment-round" scope="player" filter="red-cap"/>
-    <trigger action="increment-round" scope="player" filter="blue-cap"/>
-    <trigger action="increment-round" scope="player" filter="all(can-score,no-reds)"/>
-    <trigger action="increment-round" scope="player" filter="all(can-score,no-blues)"/>
+    <trigger action="increment-round" scope="player" filter="any(all(round=1,red-cap),all(round=1,can-score,no-reds))"/>
+    <trigger action="increment-round" scope="player" filter="any(all(round=1,blue-cap),all(round=1,can-score,no-blues))"/>
 </actions>
 <itemkeep>
     <item>stone sword</item>
