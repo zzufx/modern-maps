@@ -1,0 +1,127 @@
+<map proto="1.4.2">
+<name>Aerial Conquest</name>
+<created>2017-10-04</created>
+<version>1.0.2</version>
+<objective>Destroy the enemy's gold treasure located below the deck of the ship!</objective>
+<gamemode>dtm</gamemode>
+<authors>
+    <author uuid="e19c0b9f-d47c-4a4e-b323-fdba2939a19c"/> <!-- Scoolins -->
+</authors>
+<contributors>
+    <contributor uuid="f846db63-3df5-4e81-9dd3-7bb05027fdfb" contribution="JSON to XML conversion"/> <!-- TheBestGamer -->
+</contributors>
+<!-- Teams -->
+<teams>
+    <team id="blue-team" color="blue" max="12">Royal Navy</team>
+    <team id="red-team" color="dark red" max="12">Pirates</team>
+</teams>
+<!-- Kits -->
+<kits>
+    <kit id="default">
+        <clear/>
+        <item slot="0" unbreakable="true" enchantment="sharpness:1" material="iron sword"/>
+        <item slot="1" unbreakable="true" material="bow"/>
+        <item slot="2" unbreakable="true" material="diamond axe"/>
+        <item slot="3" unbreakable="true" material="iron pickaxe"/>
+        <item slot="4" amount="64" team-color="true" material="stained glass"/>
+        <item slot="5" amount="64" team-color="true" material="stained glass"/>
+        <!-- <item slot="8" amount="10" material="cooked beef"/> -->
+        <item slot="9" amount="64" material="arrow"/>
+        <leggings unbreakable="true" material="chainmail leggings"/>
+    </kit>
+    <kit id="blue-kit" parents="default">
+        <chestplate unbreakable="true" color="3C44AA" material="leather chestplate"/>
+        <boots unbreakable="true" color="3C44AA" material="leather boots"/>
+    </kit>
+    <kit id="red-kit" parents="default">
+        <chestplate unbreakable="true" color="B02E26" material="leather chestplate"/>
+        <boots unbreakable="true" color="B02E26" material="leather boots"/>
+    </kit>
+</kits>
+<!-- Spawns -->
+<spawns>
+    <spawn team="blue-team" kit="blue-kit" yaw="-90" region="blue-spawn"/>
+    <spawn team="red-team" kit="red-kit" yaw="90" region="red-spawn"/>
+    <default yaw="90" region="obs-spawn"/>
+</spawns>
+<!-- Monuments -->
+<destroyables completion="40%" repairable="false" materials="gold block" show-progress="true" sparks="true">
+    <destroyable name="Gold" owner="blue-team" region="blue-gold"/>
+    <destroyable name="Gold" owner="red-team" region="red-gold"/>
+</destroyables>
+<!-- Filters -->
+<filters>
+    <team id="blue-only">blue-team</team>
+    <team id="red-only">red-team</team>
+</filters>
+<!-- Block Drops -->
+<block-drops>
+    <rule wrong-tool="false">
+        <filter>
+            <material>iron block</material>
+        </filter>
+        <drops>
+            <item material = "gold helmet" enchantment="PROTECTION_PROJECTILE:1"/>
+            <item material = "gold boots" enchantment="PROTECTION_PROJECTILE:1"/>
+            <item material = "gold chestplate" enchantment="PROTECTION_ENVIRONMENTAL:2"/>
+        </drops>
+        <replacement>iron block</replacement>
+    </rule>
+</block-drops>
+<!-- Regions -->
+<regions>
+    <!-- Definitions -->
+    <union id="monuments">
+        <cuboid id="blue-gold" min="213,14,-87" max="217,18,-98"/>
+        <cuboid id="red-gold" min="275,14,32" max="279,18,42"/>
+    </union>
+    <union id="spawn-protections">
+        <cuboid id="blue-spawn-protection" min="208,22,-102" max="228,26,-82"/>
+        <cuboid id="red-spawn-protection" min="283,22,48" max="263,26,29"/>
+    </union>
+    <point id="blue-spawn">219.5,24,-92.5</point>
+    <point id="red-spawn">272.5,23,37.5</point>
+    <point id="obs-spawn">315.5,78,-28.5</point>
+    <negative id="not-map">
+        <rectangle id="map" min="191,-111" max="300,56"/>
+    </negative>
+    <!-- Applications -->
+    <apply region="not-map" block="never" message="You may not edit outside the map!"/>
+    <apply region="spawn-protections" block="never" message="You are not allowed to modify terrain here."/>
+    <apply region="blue-spawn-protection" enter="blue-only" message="You may not enter the enemy spawn."/>
+    <apply region="red-spawn-protection" enter="red-only" message="You may not enter the enemy spawn."/>
+</regions>
+<!-- Item Remove -->
+<itemremove>
+    <item>iron sword</item>
+    <item>bow</item>
+    <item>diamond axe</item>
+    <item>iron pickaxe</item>
+    <item>cooked beef</item>
+    <item>stained glass</item>
+    <item>leather helmet</item>
+    <item>leather chestplate</item>
+    <item>chainmail leggings</item>
+    <item>leather boots</item>
+    <item>gold block</item>
+</itemremove>
+<itemkeep>
+    <item>gold chestplate</item>
+    <item>gold helmet</item>
+    <item>gold boots</item>
+    <item>golden apple</item>
+    <item>arrow</item>
+</itemkeep>
+<!-- Kill Rewards -->
+<kill-rewards>
+    <kill-reward>
+        <item material="golden apple"/>
+        <item amount="4" material="arrow"/>
+    </kill-reward>
+</kill-rewards>
+<!-- Misc -->
+<hunger>
+    <depletion>off</depletion>
+</hunger>
+<maxbuildheight>37</maxbuildheight>
+</map>
