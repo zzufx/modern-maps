@@ -37,7 +37,6 @@
         <player-kit>
             <attribute operation="add" amount="-0.12">generic.gravity</attribute>
         </player-kit>
-        <double-jump recharge-before-landing="true" power="1.25" recharge-time="1.25"/>
     </if>
     <spawn spread="true" exclusive="true" kit="stop-falling-kit"><region angle="0.5,${spawn-y},0.5"><point>-3.5,${spawn-y},-12.5</point></region></spawn>
     <spawn spread="true" exclusive="true" kit="stop-falling-kit"><region angle="0.5,${spawn-y},0.5"><point>4.5,${spawn-y},-12.5</point></region></spawn>
@@ -69,6 +68,12 @@
         <clear items="false" effects="false" armor="true"/>
     </kit>
     <give kit="remove-stop-falling-kit" filter="stop-falling"/>
+    <kit id="upside-down-kit">
+        <double-jump recharge-before-landing="true" power="1.25" recharge-time="1.25"/>
+    </kit>
+    <if variant="upside-down">
+        <give kit="upside-down-kit" filter="alive"/>
+    </if>
 </kits>
 <blitz>
     <if variant="upside-down">
