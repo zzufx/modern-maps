@@ -7,8 +7,9 @@
 <constant id="site-name">Unknown</constant>
 <constant id="cs-shops-enabled">false</constant>
 <constant id="cs-shops-enabled">false</constant>
-<constant id="cs-team-one-name">Red</constant>
+<constant id="cs-team-one-name">Orange</constant>
 <constant id="cs-team-two-name">Blue</constant>
+<constant id="cs-score-mode">0</constant>
 <include id="counter-strat"/>
 <game>Scoutzknivez</game>
 <constants>
