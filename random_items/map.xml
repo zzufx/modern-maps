@@ -69,7 +69,7 @@
     </kit>
     <give kit="remove-stop-falling-kit" filter="stop-falling"/>
     <kit id="upside-down-kit">
-        <double-jump recharge-before-landing="true" power="1.25" recharge-time="1.25"/>
+        <double-jump recharge-before-landing="true" power="-1.25" recharge-time="1.25"/>
     </kit>
     <if variant="upside-down">
         <give kit="upside-down-kit" filter="alive"/>
