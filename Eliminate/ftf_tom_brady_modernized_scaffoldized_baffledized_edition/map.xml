@@ -1,0 +1,96 @@
+<map proto="1.5.0">
+<name>From The Future: Tom Brady Modernized, Scaffoldized, and Baffledized Edition</name>
+<version>1.0.0</version>
+<created>2025-07-21</created>
+<constant id="deny-block-interaction">false</constant>
+<include id="touchdown"/>
+<constants>
+    <!-- Team definitions -->
+    <constant id="team-one-name">Blue</constant>
+    <constant id="team-two-name">Red</constant>
+    <constant id="team-one-color">blue</constant>
+    <constant id="team-two-color">red</constant>
+    <constant id="team-one-spawn">0.5,13,-57.5</constant>
+    <constant id="team-two-spawn">0.55,13,58.5</constant>
+    <constant id="team-one-yaw">0</constant>
+    <constant id="team-two-yaw">180</constant>
+    <constant id="team-one-pitch">0</constant>
+    <constant id="team-two-pitch">0</constant>
+    <constant id="team-size">6</constant>
+    <!-- Map mechanics -->
+    <constant id="void-plane">-1</constant>
+    <constant id="deny-endzone-entry">false</constant>
+    <if variant="comp">
+        <constant id="time-limit">12m</constant>
+        <constant id="flag-respawn">7s</constant>
+        <constant id="flag-prerespawn">6.8s</constant>
+    </if>
+</constants>
+<authors>
+    <author uuid="d5a64b26-15ea-46c4-8319-f9c83e82a1fa"/> <!-- Eliminate -->
+</authors>
+<kits>
+    <kit id="survival-kit">
+        <game-mode>survival</game-mode>
+    </kit>
+</kits>
+<spawns>
+    <default>
+        <regions>
+            <point yaw="90">56.5,13,0.5</point>
+        </regions>
+    </default>
+</spawns>
+<filters>
+    <any id="block-list">
+        <material>scaffolding</material>
+        <material>stone button</material>
+    </any>
+</filters>
+<regions>
+    <cuboid id="playing-field" min="-24,-1,45" max="25,8,-44"/>
+    <!-- Nets -->
+    <union id="nets">
+        <cuboid id="team-one-portal" min="-24,2,-55" max="24,12,-43"/> <!-- where team two scores -->
+        <cuboid id="team-two-portal" min="-24,2,44" max="25,12,56"/> <!-- where team one scores -->
+    </union>
+    <!-- Flag spawnpoint -->
+    <cuboid id="flag-post" min="0,5,0" max="1,6,1"/>
+    <cuboid id="flag-indicator" min="-1,12,-1" max="2,14,2"/>
+    <cuboid id="flag-indicator2" min="-1,15,-1" max="2,20,2"/>
+    <point id="red-spawner-back">0.5,4.2,33.5</point>
+    <point id="red-spawner-right">18.5,4.2,0.5</point>    
+    <point id="blue-spawner-back">0.5,4.2,-32.5</point>
+    <point id="blue-spawner-right">-17.5,4.2,0.5</point>
+    <apply region="playing-field" kit="survival-kit" block="block-list"/>
+</regions>
+<spawners>
+    <spawner spawn-region="red-spawner-back" player-region="everywhere" delay="5s" max-entities="5">
+        <item material="scaffolding"/>
+    </spawner>
+    <spawner spawn-region="red-spawner-right" player-region="everywhere" delay="5s" max-entities="5">
+        <item material="scaffolding"/> 
+    </spawner>
+        <spawner spawn-region="blue-spawner-back" player-region="everywhere" delay="5s" max-entities="5">
+        <item material="scaffolding"/> 
+    </spawner>
+        <spawner spawn-region="blue-spawner-right" player-region="everywhere" delay="5s" max-entities="5">
+        <item material="scaffolding"/>
+    </spawner>
+</spawners>
+<kill-reward>
+    <item amount="4" material="scaffolding"/>
+    <item amount="4" material="stone button"/>
+    <item projectile="de-scaffoldizer" name="`d`lDE-Scaffoldizer" material="egg" amount="4"/>
+</kill-reward>
+<projectiles>
+    <projectile id="de-scaffoldizer" name="`d`lDe-Scaffoldizer" projectile="Firework" damage="0" velocity="1.5" precise="false">
+        <destroy-filter>
+            <material>scaffolding</material>
+        </destroy-filter>
+    </projectile>
+</projectiles>
+<item-remove>
+    <item>egg</item>
+</item-remove>
+</map>
