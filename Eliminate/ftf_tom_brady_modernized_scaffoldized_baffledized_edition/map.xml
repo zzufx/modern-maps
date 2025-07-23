@@ -45,6 +45,7 @@
     <any id="block-list">
         <material>scaffolding</material>
         <material>stone button</material>
+        <material>leaves</material>
     </any>
 </filters>
 <regions>
@@ -85,10 +86,9 @@
 </kill-reward>
 <projectiles>
     <projectile id="de-scaffoldizer" name="`d`lDe-Scaffoldizer" projectile="Firework" damage="0" velocity="1.5" precise="false" cooldown="1s">
-        <destroy-filters>
-            <material>scaffolding</material>
+        <destroy-filter>
             <material>leaves</material>
-        </destroy-filters>
+        </destroy-filter>
     </projectile>
 </projectiles>
 <item-remove>
