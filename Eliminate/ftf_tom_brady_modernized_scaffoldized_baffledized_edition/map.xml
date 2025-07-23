@@ -84,9 +84,10 @@
     <item projectile="de-scaffoldizer" name="`d`lDE-Scaffoldizer" material="egg" amount="4"/>
 </kill-reward>
 <projectiles>
-    <projectile id="de-scaffoldizer" name="`d`lDe-Scaffoldizer" projectile="Firework" damage="0" velocity="1.5" precise="false">
+    <projectile id="de-scaffoldizer" name="`d`lDe-Scaffoldizer" projectile="Firework" damage="0" velocity="1.5" precise="false" cooldown="1s">
         <destroy-filter>
             <material>scaffolding</material>
+            <material>leaves</material>
         </destroy-filter>
     </projectile>
 </projectiles>
