@@ -1,0 +1,174 @@
+<map proto="1.4.2">
+<name>Premium Palms</name>
+<version>1.0</version>
+<!-- <include id="conquest"/> -->
+<objective>capture the opponent's flag as many times as possible in 10 minutes!</objective>
+<authors>
+    <author uuid="621b2aa8-4e5f-4ed8-bd36-0ae2f8952a06"/> <!-- Strangey -->
+    <author uuid="b1521072-6993-4fe4-ae60-dbeeb7dc0cfa"/> <!-- Antnecb -->
+</authors>
+<contributors>
+    <contributor uuid="9225421c-3c09-4d97-bb80-f6a77c1f360b"/> <!-- jexel -->
+</contributors>
+<time result="score" overtime="90s" max-overtime="4m">10m</time>
+<teams>
+    <team id="blue" color="blue" max="5" max-overfill="5">Blue</team>
+    <team id="red" color="dark red" max="5" max-overfill="5">Red</team>
+</teams>
+<kits>
+    <!-- remove conquest kit if the include is working -->
+    <kit id="conquest">
+        <clear/>
+        <item slot="0" unbreakable="true" material="stone sword"/>
+        <item slot="1" unbreakable="true" material="bow"/>
+        <item slot="2" material="golden apple"/>
+        <item slot="8" amount="8" material="arrow"/>
+        <helmet locked="true" unbreakable="true" team-color="true" material="leather helmet"/>
+        <chestplate locked="true" unbreakable="true" team-color="true" material="leather chestplate"/>
+        <leggings locked="true" unbreakable="true" material="chainmail leggings">
+            <enchantment level="4">projectile_protection</enchantment>
+        </leggings>
+        <boots locked="true" unbreakable="true" material="iron boots">
+            <enchantment>feather_falling</enchantment>
+            <enchantment>fire_protection</enchantment>
+        </boots>
+        <effect duration="1s" amplifier="0">health boost</effect>
+        <effect duration="1s" amplifier="10">regeneration</effect>
+        <game-mode>adventure</game-mode>
+    </kit>
+    <kit id="flag-pickup" force="true">
+        <effect>slowness</effect>
+    </kit>
+    <kit id="flag-drop" force="true">
+        <effect duration="0s" amplifier="0">slowness</effect>
+    </kit>
+    <kit id="spawn-kit" parent="conquest">
+        <effect duration="4s" amplifier="255">resistance</effect>
+    </kit>
+</kits>
+<spawns>
+    <default>
+        <regions yaw="90">
+            <region yaw="90" id="obs-spawn-1"/>
+            <region yaw="-90" id="obs-spawn-2"/>
+        </regions>
+    </default>
+    <spawn team="blue" kit="spawn-kit">
+        <region yaw="180">
+            <point>-145.5,3.1,24.5</point>
+        </region>
+    </spawn>
+    <spawn team="red" kit="spawn-kit">
+        <region yaw="0">
+            <point>-75.5,3.1,-53.5</point>
+        </region>
+    </spawn>
+</spawns>
+<filters>
+    <any id="only-players">
+        <team id="only-blue">blue</team>
+        <team id="only-red">red</team>
+    </any>
+    <time id="flag-respawns">0</time>
+    <not id="no-use">
+        <any>
+            <material>trap door</material>
+            <material>wood button</material>
+            <material>beacon</material>
+        </any>
+    </not>
+</filters>
+<regions>
+    <cuboid id="obs-spawn-1" min="-53,62,-31" max="-56,62.1,-28"/>
+    <cuboid id="obs-spawn-2" min="-167,62,2" max="-165,62.1,-1"/>
+    <union id="flag-nets">
+        <cylinder id="blue-net" base="-160.5,9,-12.5" radius="0.5" height="2"/>
+        <cylinder id="red-net" base="-60.5,9,-16.5" radius="0.5" height="2"/>
+    </union>
+    <union id="spawner-stuff">
+        <union id="gapple-spawner-stuff">
+            <point id="gapple-spawn-drop">-110.5,9.5,-14.5</point>
+            <cuboid id="gapple-spawn-activation" min="-113,5.5,-17.5" max="-107.5,9.5,-11.5"/>
+        </union>
+        <union id="red-arrow-spawner-stuff">
+            <point id="red-arrow-spawn-drop">-85.5,9.5,-16.5</point>
+            <cuboid id="red-arrow-spawn-activation" min="-87.5,5.5,-18.5" max="-83.5,9.5,-14.5"/>
+        </union>
+        <union id="blue-arrow-spawner-stuff">
+            <point id="blue-arrow-spawn-drop">-135.5,9.5,-12.5</point>
+            <cuboid id="blue-arrow-spawn-activation" min="-137.5,5.5,-14.5" max="-133.5,9.5,-10.5"/>
+        </union>
+    </union>
+    <!--
+    <cuboid id="no-swimming" min="-130,0,-22" max="-91,0.9,-7"/>
+    -->
+    <below id="no-swimming" y="0.9"/>
+    <apply block="never" use="no-use"/>
+</regions>
+<flags flag-proximity-metric="none" net-proximity-metric="none" required="false">
+    <flag id="blue-flag"
+          name="Blue Flag"
+          owner="blue"
+          color="blue"
+          pickup-kit="flag-pickup"
+          drop-kit="flag-drop"
+          drop-on-water="false">
+        <post pickup-filter="only-red" recover-time="15s" respawn-time="10s">-160.5,9,-12.5</post>
+    </flag>
+    <flag id="red-flag"
+          name="Red Flag"
+          owner="red"
+          color="red"
+          pickup-kit="flag-pickup"
+          drop-kit="flag-drop"
+          drop-on-water="false">
+        <post pickup-filter="only-blue" recover-time="15s" respawn-time="10s">-60.5,9,-16.5</post>
+    </flag>
+    <flags points="1">
+        <net region="blue-net" flag="red-flag" respawn-filter="flag-respawns"/>
+        <net region="red-net" flag="blue-flag" respawn-filter="flag-respawns"/>
+    </flags>
+</flags>
+<score/>
+<spawners>
+    <spawner id="gapple-spawner" spawn-region="gapple-spawn-drop" player-region="gapple-spawn-activation" delay="9s">
+        <item material="golden apple"/>
+    </spawner>
+    <spawner id="red-arrow-spawner" spawn-region="red-arrow-spawn-drop" player-region="red-arrow-spawn-activation" delay="2s">
+        <item material="arrow"/>
+    </spawner>
+    <spawner id="blue-arrow-spawner" spawn-region="blue-arrow-spawn-drop" player-region="blue-arrow-spawn-activation" delay="2s">
+        <item material="arrow"/>
+    </spawner>
+</spawners>
+<portals>
+    <portal y="-3" region="no-swimming" filter="only-players" sound="false" smooth="true"/>
+</portals>
+<respawn delay="6s" auto="true" blackout="true"/>
+<hunger>
+    <depletion>off</depletion>
+</hunger>
+<!-- remove rest of modules if include works -->
+<itemremove>
+    <item>leather helmet</item>
+    <item>leather chestplate</item>
+    <item>chainmail leggings</item>
+    <item>iron boots</item>
+    <item>banner</item>
+    <item>compass</item>
+</itemremove>
+<itemkeep>
+    <item>stone sword</item>
+    <item>bow</item>
+    <item>golden apple</item>
+    <item>arrow</item>
+</itemkeep>
+<toolrepair>
+    <tool>stone sword</tool>
+    <tool>bow</tool>
+</toolrepair>
+<kill-reward>
+    <item material="golden apple"/>
+    <item amount="4" material="arrow"/>
+</kill-reward>
+</map>

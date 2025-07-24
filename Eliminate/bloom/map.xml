@@ -1,0 +1,148 @@
+<map proto="1.4.2">
+<name>Bloom</name>
+<version>1.0.0</version>
+<objective>Reach 750 points before the opposing team!</objective>
+<authors>
+    <author uuid="bbfac3db-dd46-4996-b936-0e2432f33285"/> <!-- Valky -->
+	<author uuid="770d4106-52cb-4c04-a771-4987330be3ec"/> <!-- NonSense -->
+</authors>
+<teams>
+    <team id="blue" color="blue" max="5" max-overfill="5">Blue</team>
+    <team id="red" color="dark red" max="5" max-overfill="5">Red</team>
+</teams>
+<kits>
+    <kit id="conquest">
+        <clear/>
+        <item slot="0" unbreakable="true" material="stone sword"/>
+        <item slot="1" unbreakable="true" material="bow"/>
+        <item slot="2" material="golden apple"/>
+        <item slot="8" amount="8" material="arrow"/>
+        <helmet locked="true" unbreakable="true" team-color="true" material="leather helmet"/>
+        <chestplate locked="true" unbreakable="true" team-color="true" material="leather chestplate"/>
+        <leggings locked="true" unbreakable="true" material="chainmail leggings">
+            <enchantment level="4">projectile_protection</enchantment>
+        </leggings>
+        <boots locked="true" unbreakable="true" material="iron boots">
+            <enchantment>feather_falling</enchantment>
+            <enchantment>fire_protection</enchantment>
+        </boots>
+        <effect duration="1s" amplifier="0">health boost</effect>
+        <effect duration="1s" amplifier="10">regeneration</effect>
+        <game-mode>adventure</game-mode>
+    </kit>
+    <kit id="spawn-kit" parent="conquest">
+        <effect duration="2s" amplifier="255">resistance</effect>
+    </kit>
+</kits>
+<spawns>
+    <default>
+        <region yaw="-90">
+            <point>10.5,31,-52.5</point>
+        </region>
+    </default>
+    <spawn team="blue" kit="spawn-kit">
+        <region yaw="0">
+            <point>42,16,-83</point>
+        </region>
+    </spawn>
+    <spawn team="red" kit="spawn-kit">
+        <region yaw="180">
+            <point>42,16,-16</point>
+        </region>
+    </spawn>
+</spawns>
+<regions>
+    <cuboid id="cap-region-mid" min="46,10,-46" max="39,13,-53"/>
+    <cuboid id="cap-region-east" min="66,21,-50" max="73,17,-43"/>
+    <cuboid id="cap-region-west" min="19,21,-49" max="12,17,-56"/>
+    <cuboid id="captured-region-west" min="8,33,-31" max="23,16,-65"/>
+    <cuboid id="captured-region-mid" min="46,8,-46" max="39,30,-53"/>
+    <cuboid id="captured-region-east" min="77,33,-66" max="62,16,-34"/>
+    <complement id="red-field-region">
+        <cuboid id="red-field-region-main" min="82,0,-117" max="3,60,-192"/>
+        <!-- Hills -->
+        <cuboid min="46,10,-151" max="39,11,-158"/>
+        <cuboid min="66,18,-155" max="73,17,-148"/>
+        <cuboid min="19,18,-154" max="12,17,-161"/>
+        <!-- Hills captured regions-->
+        <cuboid min="8,26,-140" max="9,19,-141"/>
+        <cuboid min="8,26,-147" max="9,19,-148"/>
+        <cuboid min="8,26,-167" max="9,19,-168"/>	
+        <cuboid min="77,26,-141" max="76,19,-142"/>		
+        <cuboid min="77,26,-161" max="76,19,-162"/>
+        <cuboid min="77,26,-168" max="76,19,-169"/>
+        <cuboid min="67,26,-140" max="65,30,-144"/>
+        <cuboid min="63,29,-143" max="65,26,-141"/>	
+        <cuboid min="64,27,-140" max="65,26,-144"/>
+        <cuboid min="22,26,-165" max="18,30,-169"/>			
+    </complement>
+    <complement id="blue-field-region">
+        <cuboid id="blue-field-region-main" min="82,0,93" max="3,60,18"/>
+        <!-- Hills -->
+        <cuboid min="46,10,59" max="39,11,52"/>
+        <cuboid min="66,18,55" max="73,17,62"/>
+        <cuboid min="19,18,56" max="12,17,49"/>
+        <!-- Hills captured regions-->
+        <cuboid min="8,26,70" max="9,19,69"/>
+        <cuboid min="8,26,63" max="9,19,62"/>
+        <cuboid min="8,26,43" max="9,19,42"/>	
+        <cuboid min="77,26,69" max="76,19,68"/>		
+        <cuboid min="77,26,49" max="76,19,48"/>
+        <cuboid min="77,26,42" max="76,19,41"/>
+        <cuboid min="18,26,45" max="20,30,41"/>
+        <cuboid min="20,29,44" max="22,26,42"/>	
+        <cuboid min="21,27,41" max="20,26,45"/>
+        <cuboid min="67,26,66" max="63,30,70"/>		
+    </complement>    	
+    <apply block="never"/>
+</regions>
+<king>
+    <hills required="false" capture-time="5s" points="1" time-multiplier="0" show-progress="true" neutral-state="true" incremental="true" permanent="false">
+        <hill name="West Hill" capture="cap-region-west" progress="cap-region-west" captured="captured-region-west"/>
+        <hill id="mid" name="Mid Hill" capture="cap-region-mid" progress="cap-region-mid" captured="captured-region-mid"/>
+        <hill name="East Hill" capture="cap-region-east" progress="cap-region-east" captured="captured-region-east"/>
+    </hills>
+</king>
+<score>
+    <limit>750</limit>
+</score>
+<toolrepair>
+    <tool>stone sword</tool>
+    <tool>bow</tool>
+</toolrepair>
+<itemremove>
+    <item>leather helmet</item>
+    <item>leather chestplate</item>
+    <item>chainmail leggings</item>
+    <item>iron boots</item>
+    <item>seeds</item>
+    <item>red rose</item>
+    <item>sapling</item>
+    <item>stone button</item>
+	<item>water lily</item>
+	<item>trap door</item>
+</itemremove>
+<itemkeep>
+    <item>golden apple</item>
+    <item>arrow</item>
+</itemkeep>
+<hunger>
+    <depletion>off</depletion>
+</hunger>
+<respawn delay="6s" auto="true" blackout="true"/>
+<kill-reward>
+    <item material="golden apple"/>
+    <item amount="4" material="arrow"/>
+</kill-reward>
+<!-- Implement dynamic map changes -->
+<structures>
+    <structure id="red-field" region="red-field-region" air="true"/>
+    <structure id="blue-field" region="blue-field-region" air="true"/>
+    <dynamic structure="red-field" offset="0,0,105">
+        <trigger><captured team="red">mid</captured></trigger>
+    </dynamic>
+    <dynamic structure="blue-field" offset="0,0,-105">	
+        <trigger><captured team="blue">mid</captured></trigger>
+    </dynamic>	
+</structures>
+</map>
