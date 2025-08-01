@@ -15,7 +15,7 @@
              <cylinder base="-20.5,9,-68.5" height="0" radius="1"/>
         </region>
     </spawn>
-    <spawn team="purple-team" kit="spawn-kit">
+    <spawn team="purple-team">
         <region yaw="135">
             <cylinder base="20.5,9,68.5" height="0" radius="1"/>
         </region>
