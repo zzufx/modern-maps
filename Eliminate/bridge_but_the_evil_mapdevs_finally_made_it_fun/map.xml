@@ -1,0 +1,198 @@
+<map proto="1.5.0">
+<name>zzuf I shrunk the bridgers</name>
+<version>1.0.0</version>
+<objective>Jump into the enemy team's portal, located below their spawn point!</objective>
+<created>2025-07-29</created>
+<include id="bridge"/>
+<constants>
+    <!-- Teams -->
+    <constant id="team-one-spawn">-53.5,21,0.5</constant>
+    <constant id="team-one-yaw">-90</constant>
+    <constant id="team-two-spawn">54,21,0.5</constant>
+    <constant id="team-two-yaw">90</constant>
+<!--<constant id="arrow-type">tipped arrow</constant>-->
+    <constant id="arrow-item-kit">custom-arrow-item-kit</constant>
+</constants>
+<authors>
+    <author uuid="d5a64b26-15ea-46c4-8319-f9c83e82a1fa"/> <!-- Eliminate -->
+</authors>
+<teams>
+    <team id="team-one" color="gold" max="9">Command</team>
+    <team id="team-two" color="dark_purple" max="9">Repeating</team>
+</teams>
+<spawns>
+    <default>
+        <regions>
+            <point>-0.5,18,-49.5</point>
+        </regions>
+    </default>
+</spawns>
+<kits>
+    <kit id="custom-arrow-item-kit">
+        <item slot="8" amount="1" consumable="restor-erator" name="`d`l`oRestor-erator™" lore="`7Reverts a test subject to their original size. Leaves a slight chemical after taste.
+    " material="honey bottle" enchantment="unbreaking"/>
+    </kit>
+</kits>
+<filters>
+    <any id="block-list">
+        <material>stained clay:1</material>
+        <material>stained clay:10</material>
+        <material>iron block</material>
+        <material>red concrete powder</material>
+        <material>redstone block</material>
+    </any>
+    <any id="team-one-control-mid">
+        <captured team="team-one">mid-point</captured>
+    </any>
+    <any id="team-two-control-mid">
+        <captured team="team-two">mid-point</captured>
+    </any>
+    <any id="point-blocks">
+        <material>white stained glass</material>
+        <material>orange stained glass</material>
+        <material>purple stained glass</material>
+    </any>
+    <all id="one-inside-two-tunnels">
+        <entity>player</entity>
+    </all>
+</filters>
+<regions>
+    <negative id="not-buildable">
+        <cuboid min="-57,0,-30" max="58,19,31"/>
+    </negative>
+    <cuboid id="team-one-portal" min="-66,5.5,-1" max="-63,4.5,2"/>
+    <mirror id="team-two-portal" region="team-one-portal" origin="${map-origin}" normal="1,0,0"/>
+    <!-- Round cages -->
+    <union id="cages">
+        <cylinder id="team-one-spawn-cage" base="${team-one-spawn}" height="3" radius="2"/>
+        <cylinder id="team-two-spawn-cage" base="${team-two-spawn}" height="3" radius="2"/>
+    </union>
+    <!-- Lime tunnels -->
+    <union id="team-one-tunnels">
+        <union id="team-one-left-tunnels">
+            <cuboid id="left-tunnel-1" min="-55,12,16" max="-52,13,19"/>
+            <cuboid id="left-tunnel-2" min="-55,13,16" max="-45,16,19"/>
+            <cuboid id="left-tunnel-3" min="-48,8,13" max="-39,12,16"/>
+            <cuboid id="left-tunnel-4" min="-48,13,4" max="-45,16,16"/>
+            <cuboid id="left-tunnel-5" min="-48,8,4" max="-45,13,7"/>
+            <cuboid id="left-tunnel-6" min="-48,5,4" max="-45,8,16"/>
+            <cuboid id="left-tunnel-7" min="-45,8,4" max="-39,12,7"/>
+        </union>
+        <mirror id="team-one-right-tunnels" region="team-one-left-tunnels" origin="${map-origin}" normal="0,0,-1"/>
+        <cuboid id="center-tunnel-1" min="-45,7,-3" max="-42,12,4"/>
+        <cuboid id="center-tunnel-2" min="-46,7,-1" max="-44,10,2"/>
+    </union> 
+    <mirror id="team-two-tunnels" region="team-one-tunnels"  origin="${map-origin}" normal="1,0,0"/>
+    <union id="team-one-tunnel-entrances">
+        <union id="team-one-left-entrances">
+            <block id="left-entrance-1">-54,12,17</block>
+            <block id="left-entrance-2">-40,10,14</block>
+            <block id="left-entrance-3">-47,10,13</block>
+            <block id="left-entrance-4">-40,10,5</block>
+        </union>
+        <mirror id="team-one-right-entrances" region="team-one-left-entrances" origin="${map-origin}" normal="0,0,1"/>
+        <block id="center-entrance">-46,8,0</block>
+    </union>
+    <mirror id="team-two-tunnel-entrances" region="team-one-tunnel-entrances"  origin="${map-origin}" normal="1,0,0"/>
+    <!--Control point at mid-->
+<!--NOT WORKING NEED TO FIX AND MAKE NOT BUILDABLE
+    <apply block-place="deny-participating" region="mid-not-buildable"/>-->    
+    <union id="mid">
+        <cuboid id="mid-not-buildable" min="-5,9,-4" max="6,19,5"/>
+        <cuboid id="mid-capture" min="-2,10,-2" max="3,14,3"/>
+        <cuboid id="mid-progress" min="-2,9,-2" max="3,10,3"/>
+        <cuboid id="sign" min="0,26,-4" max="1,36,5"/>
+    </union>
+</regions>
+<control-points>
+    <control-point id="mid-point" name="Middle" required="false" capture="mid-capture" progress="mid-progress" captured="sign" capture-time="5s" show-progress="true" visual-materials="point-blocks" neutral-state="true" decay-rate="0.5" owned-decay-rate="0.7" points="0" show-effects="true" stats="false"/>
+</control-points>
+<kill-reward>
+    <filter>
+        <kill-streak count="5" repeat="true"/>
+    </filter>
+    <item amount="1" consumable="restor-erator" name="`d`l`oRestor-erator™" lore="`7Reverts a test subject to their original size.
+Leaves a slight chemical after taste.
+" material="honey bottle" enchantment="unbreaking"/>
+</kill-reward>
+<kits>
+    <kit id="default-player-size">
+        <effect duration="3.5" amplifier="256">slowness</effect>
+        <effect duration="3.5" amplifier="256">jump boost</effect>        
+        <effect duration="3.5" amplifier="64">darkness</effect>
+        <effect duration="2">glowing</effect>
+        <action>  
+            <message id="eat-message" text="`8`oYour molecular structures begin to revert"/>
+            <sound key="entity.magma_cube.jump" volume="5" pitch="0.2"/>
+            <sound key="entity.evoker.cast_spell" volume="2" pitch="-0.3"/>
+            <sound key="entity.camel_eat" volume="4" pitch="-1"/>  
+            <sound key="entity.creaking.spawn" volume="2" pitch="-0.2"/>
+        </action> 
+        <attribute operation="add" amount="4">scale</attribute>
+    </kit>
+</kits>
+<consumables>
+    <consumable id="restor-erator" action="default-player-size" on="eat" override="false"/>
+</consumables>
+<itemremove>
+    <item>glass bottle</item>
+    <item>honey bottle</item>
+</itemremove>
+<actions>
+    <action id="team-one-score-portal" scope="match" expose="true">    
+        <message id="score-portal" text="jimBOT: Anomaly readings are spiking! A sky portal has opened!"/>
+        <sound key="entity.lightning_bolt.thunder" volume="0.1" pitch="2"/>    
+        <sound key="entity.evoker.prepare_summon" volume="0.7" pitch="-0.2"/>
+        <sound key="block.beacon.deactivate" volume=".7" pitch="-1"/>
+        <sound key="block.sculk_sensor.clicking" volume=".4" pitch="0.2"/>
+        <paste-structure>
+            <structure>falling-supplies</structure>
+            <x>0</x>
+            <y>26</y>
+            <z>-24</z>
+        </paste-structure>
+        <fill region="team-two-tunnel-entrances" material="air"/>
+        <fill region="team-one-tunnel-entrances" material="air"/>
+    </action>                    
+    <trigger filter="after-round-1" action="team-one-score-portal" scope="match"/>
+    <!--Tunnel closing-->
+    <action id="team-one-close-tunnels" scope="match" expose="true">
+        <message id="team-one-close-msg" text="jimBOT: `5`lRepeating `fcan no longer use your team's `alime `ftunnels!"/>
+        <fill region="team-one-tunnel-entrances" material="obsidian"/>
+        <fill region="team-two-tunnel-entrances" material="air"/>
+    </action>
+    <action id="team-two-close-tunnels"  scope="match" expose="true">
+        <message id="team-two-close-msg" text="jimBOT: `6`lCommand `fcan no longer use your team's `alime `ftunnels!"/>
+        <fill region="team-two-tunnel-entrances" material="obsidian"/>
+        <fill region="team-one-tunnel-entrances" material="air"/>
+    </action>
+    <trigger filter="team-one-control-mid" action="team-one-close-tunnels" scope="match"/>
+    <trigger filter="team-two-control-mid" action="team-two-close-tunnels" scope="match"/>    
+</actions>
+<structures>
+    <structure id="falling-supplies" air="false" clear="false">
+        <region>
+            <cuboid min="19,10,-50" max="23,13,-46"/>
+        </region>
+    </structure>
+    <dynamic structure="falling-supplies" location="0,26,-24">
+        <trigger>
+            <all>
+                <filter id="after-round-1"/>
+            </all>
+        </trigger>
+    </dynamic>
+</structures>
+<block-drops>
+    <rule>
+        <filter>
+            <any>
+                <material>red concrete powder</material>
+            </any>
+        </filter>
+        <drops>
+            <item material="redstone block"/>
+        </drops>
+    </rule>
+</block-drops>
+</map>

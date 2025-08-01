@@ -1,0 +1,208 @@
+<map proto="1.5.0">
+<name>Flag Assault: Xolotl</name>
+<version>1.0.0</version>
+<objective>Get kills and use the scorebox at mid. Once your team has 20 points, your team's flag spawns. Score your flag in the enemy portals, most flags scored wins!</objective>
+<created>2025-07-31</created>
+<include id="gapple-kill-reward"/>
+<authors>
+    <author uuid="d5a64b26-15ea-46c4-8319-f9c83e82a1fa"/> <!-- Eliminate -->
+</authors>
+<teams>
+    <team id="red-team" color="red" max="8">Red</team>
+    <team id="blue-team" color="blue" max="8">Blue</team>
+</teams>
+<spawns>
+    <spawn team="red-team" kit="spawn-kit" yaw="-90">
+        <region>
+            <point id="red-spawn-point">-55.5,10,0.5</point>
+        </region>
+    </spawn>
+    <spawn team="blue-team" kit="spawn-kit" yaw="90">
+        <region>
+            <point id="blue-spawn-point">56.5,10,0.5</point>
+        </region>
+    </spawn>
+    <default>
+        <regions>
+            <point yaw="180">0.5,14,41.5</point>            
+        </regions>
+    </default>
+</spawns>
+<regions>
+       <!-- void filter-->
+    <cuboid id="red-spawn" min="-60,0,-7" max="-49,50,8"/>
+    <mirror id="blue-spawn" region="red-spawn" normal="1,0,0" origin="0.5,0,0.5"/>
+    <cuboid id="red-flag-post" min="-45,8,-1" max="-42,13,2"/>
+    <mirror id="blue-flag-post" region="red-flag-post" normal="1,0,0" origin="0.5,0,0.5"/>
+    <union id="middle">  
+        <cuboid id="scorebox" min="-1,9.5,-1" max="2,10.5,2"/>         
+        <cuboid id="mid-platform" min="-4,11,-4" max="5,oo,5"/>        
+    </union>
+    <union id="red-portals">
+            <cuboid id="red-left-portal" min="-47,10,14" max="-46,14,17"/>
+            <cuboid id="red-right-portal" min="-47,10,-16" max="-46,14,-13"/>            
+    </union>
+    <mirror id="blue-portals" region="red-portals" normal="1,0,0" origin="0.5,0,0.5"/> 
+    <union id="red-portal-blockers">
+        <cuboid id="red-left-portal-blocker" min="-46,10,13" max="-44,13,18"/>
+        <cuboid id="red-right-portal-blocker" min="-46,10,-17" max="-44,13,-12"/>    
+    </union>
+    <mirror id="blue-portal-blockers" region="red-portal-blockers" normal="1,0,0" origin="0.5,0,0.5"/>
+    <cuboid id="red-flag-fill" min="-45,9,-1" max="-42,10,2"/>
+    <mirror id="blue-flag-fill" region="red-flag-fill" normal="1,0,0" origin="0.5,0,0.5"/>
+    <!-- Deny entry -->
+    <apply enter="red-team" region="red-spawn" message="You may not enter the opposing team's spawn!"/>
+    <apply enter="blue-team" region="blue-spawn" message="You may not enter the opposing team's spawn!"/>
+    <!-- Apply Kits -->
+    <apply kit="spawn-kit" region="red-portals" filter="on-red"/>
+    <apply kit="spawn-kit" region="blue-portals" filter="on-blue"/>
+    <!--Filters-->
+    <apply block="never" region="red-spawn"/>
+    <apply block="never" region="blue-spawn"/>
+    <apply block="never" region="red-flag-post"/>
+    <apply block="never" region="blue-flag-post"/>
+    <apply block="never" region="middle"/>
+    <apply block="never" region="red-portals"/>
+    <apply block="never" region="blue-portals"/> 
+    <apply block="block-list"/>
+</regions>
+<kits>
+    <kit id="spawn-kit">
+        <clear/>
+        <item slot="0" unbreakable="true" material="stone sword"/>
+        <item slot="1" unbreakable="true" material="gold axe"/>
+        <item slot="2" unbreakable="true" enchantment="infinity" material="bow"/>
+        <item slot="4" amount="32" damage="3" material="leaves"/>
+        <item slot="5" material="golden apple"/>
+        <item slot="8" amount="1" material="sunflower" name="`6☀ `e`lSacrificial Token `e☀" lore="`5`oJump into the scorebox at mid! With enough points you will unlock your team's flag!"/>
+        <item slot="27" material="arrow"/>
+        <leggings unbreakable="true" locked="true" material="chainmail leggings">
+            <enchantment level="2">projectile_protection</enchantment>
+        </leggings>
+        <boots unbreakable="true" locked="true" material="iron boots"/>
+        <potion duration="2" amplifier="10">regeneration</potion>
+        <potion duration="2" amplifier="10">damage_resistance</potion>
+        <game-mode>survival</game-mode>
+        <helmet team-color="true" locked="true" unbreakable="true" material="leather helmet"/>
+        <chestplate team-color="true" locked="true" unbreakable="true" material="leather chestplate"/>
+    </kit>
+    <kit id="flag-pickup" force="true">
+        <max-health>10</max-health>
+    </kit>
+    <kit id="reset-health" force="true">
+        <max-health>20</max-health>
+    </kit>
+</kits>
+<kill-rewards>
+    <kill-reward>
+        <item amount="3" material="arrow"/>
+        <item amount="4" material="jungle leaves"/>
+        <item amount="1" material="sunflower" name="`6☀ `e`lSacrificial Token `e☀" lore="`5`oJump into the scorebox at mid! With enough points you will unlock your team's flag!"/>
+    </kill-reward>
+</kill-rewards>
+<filters>
+    <all id="on-red">
+        <team>red-team</team>
+    </all>
+    <all id="on-blue">
+        <team>blue-team</team>
+    </all>
+    <!--Scorebox flag unlock filters -->
+    <all id="red-score-reached">
+        <score team="red-team">[20,oo)</score>
+    </all>
+    <all id="blue-score-reached">
+        <score team="blue-team">[20,oo)</score>
+    </all>
+    <!--Block Filters -->
+    <any id="block-list">
+        <material>jungle leaves</material>
+        <material>scaffolding</material>
+        <material>cobweb</material>
+        <material>short grass</material>
+    </any>
+</filters>
+<score display="pipe">
+    <box points="0" region="scorebox">
+        <redeemables>
+           <item points="2">sunflower</item>
+        </redeemables>
+    </box>
+</score>
+<portals>
+    <!--SCOREBOX PORTALS-->
+    <portal filter="on-red" region="scorebox" destination="red-spawn-point" yaw="@-90"/>
+    <portal filter="on-blue" region="scorebox" destination="blue-spawn-point" yaw="@90"/>
+    <!--FLAG PORTALS-->
+    <portal region="red-portals" destination="red-spawn-point" filter="on-red"/>
+    <portal region="blue-portals" destination="blue-spawn-point" filter="on-blue"/>
+</portals>
+
+
+<actions>
+    <action id="red-flag-unlock" scope="team" expose="true">
+        <message id="red-unlock-message" text="Huītzilōpōchtli is pleased. Your team has unlocked your flag. Reach the portals on the other side with your flag to score!"/>
+        <switch-scope outer="team" inner="match">
+            <fill region="blue-portals" material="90:2"/>
+            <fill region="red-flag-fill" material="air"/>              
+        </switch-scope>
+    </action>
+    <action id="blue-flag-unlock" scope="team" expose="true">
+        <message id="blue-unlock-message" text="Huītzilōpōchtli is pleased. Your team has unlocked your flag. Reach the portals on the other side with your flag to score!"/>
+        <switch-scope outer="team" inner="match">
+            <fill region="red-portals" material="90:2"/>
+                     
+        </switch-scope>
+    </action>
+    <!--TRIGGERS-->
+    <trigger filter="all(red-score-reached,on-red)" action="red-flag-unlock" scope="team"/>
+    <trigger filter="all(blue-score-reached,on-blue)" action="blue-flag-unlock" scope="team"/>
+</actions>
+
+<flags>
+    <flag id="red-flag" name="Red Flag" pickup-filter="on-red" color="red" required="false" beam="false" carry-message="Score this in the enemy's goals!" pickup-kit="flag-pickup" drop-kit="reset-health">
+        <post id="red-post" recover-time="10s" respawn-time="5s">-44,8,0</post>
+        <net points="1" region="blue-portals" capture-filter="on-red"/>
+    </flag>
+    <flag id="blue-flag" name="Blue Flag" pickup-filter="on-blue" color="blue" required="false" beam="false" carry-message="Score this in the enemy's goals!" pickup-kit="flag-pickup" drop-kit="reset-health">
+        <post id="blue-post" recover-time="10s" respawn-time="5s">44,8,0</post>
+        <net points="1" region="red-portals" capture-filter="on-blue"/>
+    </flag>
+</flags>
+
+<shopkeepers>
+    <shopkeeper name="`5⚗`2`l Shaman `5⚗" mob="Bogged" shop="shaman">
+        <point yaw="-180">-56,11,4</point>
+    </shopkeeper>
+</shopkeepers>
+<shops>
+    <shop id="shaman">
+        <category id="supplies" name="`7`lSupplies" material="firefly bush">
+            <item material="jungle leaves" amount="8" price="1" currency="`sunflower"/>
+            <item material="scaffolding" amount="16" price="2" currency="sunflower"/>
+        </category>
+    </shop>
+</shops>
+
+
+
+
+
+<itemremove>
+    <item>jungle sapling</item>
+    <item>leather helmet</item>
+    <item>chainmail leggings</item>
+    <item>iron boots</item>
+    <item>leather chestplate</item>
+    <item>arrow</item>
+    <item>golden apple</item>
+    <item>firework charge</item>
+    <item>leaves</item>
+    <item>seeds</item>
+    <item>string</item>
+</itemremove>
+<hunger>
+    <depletion>off</depletion>
+</hunger>
+<maxbuildheight>14</maxbuildheight>
+</map>
