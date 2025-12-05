@@ -1,0 +1,1679 @@
+<map proto="1.5.0">
+<name>Casino</name>
+<version>1.0</version>
+<objective>test</objective>
+<include id="cards"/>
+<authors>
+    <author uuid="d5a64b26-15ea-46c4-8319-f9c83e82a1fa"/> <!-- Eliminate -->
+</authors>
+<constants>
+    <!-- BLACKJACK -->
+    <constant id="TABLES_AMOUNT">2</constant>
+    <constant id="WAITING_ON_TURN">-2</constant>
+    <constant id="WAITING_ON_MOVE">-1</constant>
+    <constant id="NOT_PLAYING">0</constant>
+    <constant id="PLAYED_HAND">1</constant>
+    <constant id="PLAYERS_PER_TABLE">7</constant>
+    <constant id="TABLE_1">0</constant>
+    <constant id="TABLE_2">1</constant>
+    <constant id="TABLE_3">2</constant>
+    <constant id="TABLE_4">3</constant>
+    <constant id="TABLE_5">4</constant>
+    <constant id="TABLE_6">5</constant>
+    <constant id="TABLE_7">6</constant>
+    <!-- SUITS -->
+    <constant id="HEARTS">1</constant>
+    <constant id="DIAMONDS">2</constant>
+    <constant id="CLUBS">3</constant>
+    <constant id="SPADES">4</constant>
+    <!-- GAMES -->
+    <constant id="GAME_BLACKJACK">1</constant>
+</constants>
+<teams>
+    <team id="blue-team" color="blue" max="5" max-overfill="5">Blue</team>
+    <team id="red-team" color="dark red" max="5" max-overfill="5">Red</team>
+</teams>
+<kits>
+    <kit id="spawn-kit" force="true">
+        <clear/>
+        <item slot="8" amount="64" material="gold ingot"/>
+        <game-mode>adventure</game-mode>
+    </kit>
+    <kit id="blackjack-pre-game">
+        <item slot="4" consumable="bet-consumable" material="iron_plate" name="`fBet: 16"/>
+    </kit>
+    <!-- Consumable kits -->
+    <kit id="hit-kit">
+        <item slot="0" consumable="hit-consumable" material="gold block" name="`fHit"/>    
+    </kit>
+    <kit id="stand-kit">
+        <item slot="1" consumable="stand-consumable" material="chest" name="`fStand"/>
+    </kit>
+    <kit id="double-down-kit">
+        <item slot="2" consumable="double-down-consumable" material="diamond" name="`b`lDouble down">
+            <enchantment level="1">fortune</enchantment>
+        </item>
+    </kit>
+    <kit id="split-kit">
+        <item slot="5" consumable="split-consumable" material="gold nugget" name="`fSplit"/>
+    </kit>
+    <kit id="split-hit-kit">
+        <item slot="6" consumable="split-hit-consumable" material="emerald block" name="`fHit (split pile)"/>
+    </kit>
+    <kit id="split-stand-kit">
+        <item slot="7" consumable="split-stand-consumable" material="ender chest" name="`fStand (split pile)"/>
+    </kit>
+
+
+    <kit id="busted-kit" force="true">
+        <effect>invisibility</effect> 
+    </kit>
+    <lend kit="busted-kit" filter="bust-kit-filter"/>
+</kits>
+<spawns>
+    <spawn team="red-team" kit="spawn-kit" yaw="0">
+        <region>
+            <point id="red-spawn-point">-7.5,8,10.5</point>
+        </region>
+    </spawn>
+    <spawn team="blue-team" kit="spawn-kit" yaw="0">
+        <region>
+            <point id="blue-spawn-point">-9.5,8,10.5</point>
+        </region>
+    </spawn>
+    <default yaw="0">
+        <region>
+            <point>-9.5,8,7.5</point>            
+        </region>
+    </default>
+</spawns>
+<regions>
+    <union id="blackjack-tables">
+        <cuboid id="blackjack-table-1" min="-22,8,13" max="-31,14,0"/>
+        <cuboid id="blackjack-table-2" min="-31,8,-15" max="-22,14,-2"/>
+    </union>
+    <apply leave="not(is_playing=${GAME_BLACKJACK})" region="blackjack-table-1" message="You may not leave mid hand!"/>
+    <apply leave="not(is_playing=${GAME_BLACKJACK})" region="blackjack-table-2" message="You may not leave mid hand!"/>
+    <!-- Blackjack table seats (extend y up so cant jump on top)-->
+    <union id="blackjack-table-1-seats">
+        <cuboid id="seat-1" min="-29,9,10" max="-28,15,11"/>
+        <cuboid id="seat-2" min="-27,9,10" max="-26,15,11"/>
+        <cuboid id="seat-3" min="-26,9,9" max="-25,15,10"/>
+        <cuboid id="seat-4" min="-26,9,6" max="-25,15,7"/>
+        <cuboid id="seat-5" min="-26,9,3" max="-25,15,4"/>
+        <cuboid id="seat-6" min="-27,9,2" max="-26,15,3"/>
+        <cuboid id="seat-7" min="-29,9,2" max="-28,15,3"/>
+    </union>
+    <apply enter="all(blackjack_table_progress[0]=1,p=0)" leave="p=-1" region="seat-1"/>
+    <apply enter="all(blackjack_table_progress[0]=1,p=1)" leave="p=-1" region="seat-2"/>
+    <apply enter="all(blackjack_table_progress[0]=1,p=2)" leave="p=-1" region="seat-3"/>
+    <apply enter="all(blackjack_table_progress[0]=1,p=3)" leave="p=-1" region="seat-4"/>
+    <apply enter="all(blackjack_table_progress[0]=1,p=4)" leave="p=-1" region="seat-5"/>
+    <apply enter="all(blackjack_table_progress[0]=1,p=5)" leave="p=-1" region="seat-6"/>
+    <apply enter="all(blackjack_table_progress[0]=1,p=6)" leave="p=-1" region="seat-7"/>
+</regions>
+<filters>
+    <any id="table-filter">
+        <region id="blackjack-table-1"/>
+        <region id="blackjack-table-2"/>
+    </any>
+    <!-- Player's hand -->
+    <any id="bust-kit-filter">
+        <all>
+            <variable var="split">0</variable>
+            <variable var="busted">1</variable>            
+        </all>
+        <all>
+            <variable var="busted">1</variable> 
+            <variable var="split">2</variable>
+            <variable var="split_busted">1</variable>
+        </all>
+    </any>
+    <variable id="bust-filter" var="hand_value">22..oo</variable>
+    <variable id="blackjack-filter" var="hand_value">21</variable>
+    <variable id="split-bust-filter" var="split_hand_value">22..oo</variable>
+    <variable id="split-blackjack-filter" var="split_hand_value">21</variable>
+    <!-- Dealers's hand -->
+    <all id="dealer-hit-filter">
+        <variable var="blackjack_is_dealers_turn">1</variable>
+        <variable var="dealer_hand_value">2..16</variable>
+    </all>
+    <all id="dealer-stand-filter">
+        <variable var="blackjack_is_dealers_turn">1</variable>
+        <variable var="dealer_hand_value">17..20</variable>
+    </all>
+    <all id="dealer-blackjack-filter">
+        <variable var="blackjack_is_dealers_turn">1</variable>
+        <variable var="dealer_hand_value">21</variable>
+    </all>
+    <all id="dealer-bust-filter">
+        <variable var="blackjack_is_dealers_turn">1</variable>
+        <variable var="dealer_hand_value">22..</variable>
+    </all>
+    <!-- Results -->
+    <not id="show-results-filter">
+        <variable value="blackjack_table_1_results[r]" scope="match">0</variable>
+    </not>
+    <not id="show-split-results-filter">
+        <variable value="blackjack_table_1_split_results[r]" scope="match">0</variable>
+    </not>
+    <any id="dealer-player-push-filter">
+        <all>
+            <variable value="blackjack_table_1_results[r]" scope="match">21</variable>
+            <variable var="dealer_hand_value">21</variable>        
+        </all>
+        <all>
+            <variable value="blackjack_table_1_split_results[r]" scope="match">21</variable>
+            <variable var="dealer_hand_value">21</variable>        
+        </all>
+    </any>
+    <!-- Stalemate FIXME: DO SOMETHING HERE TO FIX THE 4 PULSES -->
+    <pulse id="blackjack-stalemate-countdown-pulse" period="1s" duration="0.5s">
+        <after duration="12s">
+            <all>
+                <variable var="blackjack_player_state">${WAITING_ON_MOVE}</variable>
+            </all>
+        </after>
+    </pulse>
+
+    <after duration="15s" id="blackjack-stalemate-reset-var" message="Turn ending in {0}">
+        <all>
+            <variable var="blackjack_player_state">${WAITING_ON_MOVE}</variable>
+        </all>
+    </after>
+
+</filters>
+
+<variables scope="player">
+    <variable id="is_playing" />
+    <variable id="blackjack_current_table" default="-1" />
+    <variable id="blackjack_player_state" /> <!-- -1=waiting on move 0= not on this table  1= played hand (Used for tracking if all players at table 1 played their turns)-->
+    <variable id="balance" default="64" />
+    <variable id="bet" default="16" />
+    <variable id="card_i" />
+    <array id="cards_in_hand_number" size="20" />
+    <array id="cards_in_hand_suit" size="20" />
+    <variable id="hand_value" />
+    <variable id="i" />
+    <variable id="calc" />
+    <variable id="some_i"/>
+    <variable id="compare"/>
+    <variable id="can_split" default="-1"/>     <!-- 0= player can split (split kit applied if balance is high enough)-->
+    <variable id="compare_table"/>
+</variables>
+
+<variables scope="match">
+    <array id="blackjack_tables_open_seats" size="${TABLES_AMOUNT}" default="${PLAYERS_PER_TABLE}" />
+    <array id="blackjack_tables_current_turn" size="${TABLES_AMOUNT}" default="-1" />
+    <variable id="player_found"/>
+    <variable id="possible_next_player"/>
+    <variable id="next_player"/>
+    <variable id="table_currently_checking" default="0" />
+
+    <array id="table_1_compare" size="7"/>     <!-- Compare table 1 player hands vs dealer hand at end of round -->
+</variables>
+
+<variables>
+    <variable id="p" default="-1" scope="player"/>      <!-- 0-6 track players seat at a table -->
+    <variable id="r" default="0" scope="match"/>        <!-- index for blackjack_table_1_results-->
+
+    <array id="blackjack_table_progress" size="5" scope="match"/>   <!-- 1=round in progress -->
+    <variable id="blackjack_multiplier" default="0" scope="player"/>
+    <variable id="blackjack_split_multiplier" default="0" scope="player"/>
+    <!-- Split -->
+    <variable id="split_card_i" default="1" scope="player" />
+    <array id="split_cards_in_hand_number" scope="player" size="20" />
+    <array id="split_cards_in_hand_suit" scope="player" size="20" />
+    <variable id="split_hand_value" scope="player"/>
+    <variable id="blackjack_player_split_state" scope="player" default="-1"/>   <!-- blackjack_player_state for split -->
+    <!-- Dealer vars -->
+    <variable id="dealer_card_i" scope="match" />
+    <array id="dealer_cards_in_hand_number" scope="match" size="40" /> <!-- first 20 -> table 1, and so on -->
+    <array id="dealer_cards_in_hand_suit" scope="match" size="40" />
+    <variable id="dealer_hand_value" scope="match"/>
+    <variable id="d" scope="match"/>    <!-- Match scoped index for blackjack dealer-->
+    <variable id="dcalc" scope="match"/>   <!-- Dealer calcs -->
+    <variable id="dealer_revealed_score" scope="match"/>    <!-- Fake score only used for showing, NOT logic -->
+    <variable id="blackjack_table_number" scope="match"/>   <!-- Temporary index name until table detection added-->
+    <!-- Logic variables -->
+    <variable id="doubled_down" scope="player"/>    <!-- 3=doubled down -->
+    <variable id="split" scope="player"/>       <!-- 2= has split, has 2 piles. Needs a split piles kit with unique consumables -->
+    <variable id="busted" scope="player"/>  <!-- 1= busted lends invis kit -->
+    <variable id="split_busted" scope="player"/>    <!-- 1=busted -->
+    <!-- Table turn variables -->
+    <variable id="blackjack_is_dealers_turn" scope="match"/>  <!-- 1= dealers turn -->
+    <variable id="blackjack_compare_hands" scope="match"/> <!-- 1=time to compare values w/ hand_results -->
+    <array id="blackjack_table_1_modifiers" size="7" scope="match"/>    <!-- 1=blackjack(2 cards) 2=split 3=double 4=blackjack(>2 cards) 5=push 6=beat dealer no push/blackjack 7=lose no push/blackjack. p index -->
+    <array id="blackjack_table_1_split_modifiers" size="7" scope="match"/>    <!-- 1=blackjack(2 cards) 2=split  4=blackjack(>2 cards) 5=push 6=beat dealer no push/blackjack 7=lose no push/blackjack. p index -->
+    <array id="blackjack_table_1_push" size="7" scope="match"/>    <!-- 1=push (Push Player:20 Dealer:20 return original bet) -->
+    <array id="blackjack_table_1_split_push" size="7" scope="match"/>    <!-- 1=push (Push Player:20 Dealer:20 return original bet) -->
+    <array id="blackjack_table_1_blackjack_push" size="7" scope="match"/>    <!-- 1=push (Push Player:21 Dealer:21 return original bet) -->
+    <array id="blackjack_table_1_split_blackjack_push" size="7" scope="match"/>    <!-- 1=push (Push Player:21 Dealer:21 return original bet) -->
+    <array id="blackjack_table_1_results" size="7" scope="match"/>
+    <array id="blackjack_table_1_split_results" size="7" scope="match"/>
+    <array id="blackjack_start_cycle_time" size="${TABLES_AMOUNT}" default="20" scope="match"/> <!-- Table countdown messages. How long until table starts. starting in 20 seconds 0=started/already running -->
+    <variable id="player_finder" default="-1" scope="match"/>
+</variables>
+
+<actions>
+    <trigger scope="player">
+        <filter>
+            <all>
+                <any>
+                    <all>
+                        <region id="blackjack-table-1" />
+                        <variable var="blackjack_table_progress" index="${TABLE_1}">0</variable>
+                        <not>
+                            <variable var="blackjack_tables_open_seats" index="${TABLE_1}">0</variable>
+                        </not>
+                    </all>
+                    <all>
+                        <region id="blackjack-table-2" />
+                        <variable var="blackjack_table_progress" index="${TABLE_2}">0</variable>
+                        <not>
+                            <variable var="blackjack_tables_open_seats" index="${TABLE_2}">0</variable>
+                        </not>
+                    </all>
+                </any>
+                <not>
+                    <variable var="is_playing">${GAME_BLACKJACK}</variable>
+                </not>
+            </all>
+        </filter>
+        <action id="table-msg" scope="player" expose="true">
+            <message text="You have entered the blackjack table. {players}/7 players playing">
+                <replacements>
+                    <decimal id="players" value="7 - blackjack_tables_open_seats[0]"/>
+                </replacements>
+            </message>
+            <kit id="blackjack-pre-game"/>
+        </action>
+    </trigger>
+    <trigger filter="all(table-filter,blackjack_current_table=-1)" scope="player">
+        <action id="define-table" scope="player" expose="true">
+            <action filter="blackjack-table-1">
+                <set var="blackjack_current_table" value="${TABLE_1}" />
+            </action>
+            <action filter="blackjack-table-2">
+                <set var="blackjack_current_table" value="${TABLE_2}" />
+            </action>
+        </action>
+    </trigger>
+    <trigger filter="all(not(blackjack_current_table=-1),not(table-filter))" scope="player">
+        <action id="undefine-table" scope="player" expose="true">
+            <set var="blackjack_current_table" value="-1"/>
+        </action>
+    </trigger>
+
+    <action id="bet-action" scope="player" expose="true">
+        <set var="p" value="7 - blackjack_tables_open_seats[0]"/>
+        <set var="blackjack_tables_open_seats" index="blackjack_current_table" value="blackjack_tables_open_seats[blackjack_current_table] - 1" />
+        <set var="is_playing" value="${GAME_BLACKJACK}"/>
+        <!-- <set var="balance" value="balance - bet"/> -->     <!-- uncomment -->
+        <set var="card_i" value="0" />
+        <repeat times="2">
+            <action id="deal-card" />
+        </repeat>
+        <message text="Current value: {0}">
+            <replacements>
+                <decimal id="0" value="hand_value" />
+            </replacements>
+        </message>
+        <set var="dealer_card_i" value="20 * blackjack_current_table" />
+        <switch-scope inner="match" outer="player">
+            <repeat times="2">
+                <action id="deal-dealer-card"/>
+            </repeat>
+            <!-- <set var="blackjack_table_progress" index="blackjack_table_number" value="1"/> -->
+        </switch-scope>
+        <message text="`aDealer was dealt a `f{0} `aof {1}">
+            <replacements>
+                <switch id="0" value="dealer_cards_in_hand_number[0]">
+                    <case match="1" result="A" />
+                    <case match="2" result="2" />
+                    <case match="3" result="3" />
+                    <case match="4" result="4" />
+                    <case match="5" result="5" />
+                    <case match="6" result="6" />
+                    <case match="7" result="7" />
+                    <case match="8" result="8" />
+                    <case match="9" result="9" />
+                    <case match="10" result="10" />
+                    <case match="11" result="J" />
+                    <case match="12" result="Q" />
+                    <case match="13" result="K" />
+                </switch>
+                <switch id="1" value="dealer_cards_in_hand_suit[0]">
+                    <case match="${HEARTS}" result="`eHearts" />
+                    <case match="${DIAMONDS}" result="`eDiamonds" />
+                    <case match="${CLUBS}" result="`eClubs" />
+                    <case match="${SPADES}" result="`eSpades" />
+                </switch>
+            </replacements>
+        </message>
+        <message text="`aDealer's current value: `f{0}">
+            <replacements>
+                <switch id="0" value="dealer_cards_in_hand_number[0]">
+                    <case match="1" result="11" />
+                    <case match="2" result="2" />
+                    <case match="3" result="3" />
+                    <case match="4" result="4" />
+                    <case match="5" result="5" />
+                    <case match="6" result="6" />
+                    <case match="7" result="7" />
+                    <case match="8" result="8" />
+                    <case match="9" result="9" />
+                    <case match="10" result="10" />
+                    <case match="11" result="10" />
+                    <case match="12" result="10" />
+                    <case match="13" result="10" />
+                </switch>
+            </replacements>
+        </message>
+        <!-- <kit filter="balance=32..oo">
+            <item slot="6" consumable="double-down-consumable" material="diamond" name="`b`lDouble down"/>
+        </kit> -->
+    </action>
+
+    <action id="deal-card" scope="player" expose="true">
+        <action filter="card_i=0..19">
+            <set var="cards_in_hand_number" index="card_i" value="floor(random() * 13) + 1" />
+            <set var="cards_in_hand_suit" index="card_i" value="floor(random() * 4) + 1" />
+            <message text="You were dealt a {0} of {1}">
+                <replacements>
+                    <switch id="0" value="cards_in_hand_number[card_i]">
+                        <case match="1" result="A" />
+                        <case match="2" result="2" />
+                        <case match="3" result="3" />
+                        <case match="4" result="4" />
+                        <case match="5" result="5" />
+                        <case match="6" result="6" />
+                        <case match="7" result="7" />
+                        <case match="8" result="8" />
+                        <case match="9" result="9" />
+                        <case match="10" result="10" />
+                        <case match="11" result="J" />
+                        <case match="12" result="Q" />
+                        <case match="13" result="K" />
+                    </switch>
+                    <switch id="1" value="cards_in_hand_suit[card_i]">
+                        <case match="${HEARTS}" result="`eHearts" />
+                        <case match="${DIAMONDS}" result="`eDiamonds" />
+                        <case match="${CLUBS}" result="`eClubs" />
+                        <case match="${SPADES}" result="`eSpades" />
+                    </switch>
+                </replacements>
+            </message>
+            <set var="card_i" value="card_i + 1" />
+        </action>
+        <action filter="card_i=20..">
+            <message text="`cYour hand is full?? wtf" />
+        </action>
+        <action id="set-hand-value" />
+    </action>
+
+    <action id="set-hand-value" scope="player">
+        <set var="i" value="0" />
+        <set var="hand_value" value="0" />
+        <repeat times="20">
+            <!-- Face cards -->
+            <action filter="any(cards_in_hand_number[i]=11,cards_in_hand_number[i]=12,cards_in_hand_number[i]=13)">
+                <set var="hand_value" value="hand_value + 10" />
+            </action>
+            <!-- Plain value -->
+            <action filter="not(any(cards_in_hand_number[i]=1,cards_in_hand_number[i]=11,cards_in_hand_number[i]=12,cards_in_hand_number[i]=13))">
+                <set var="hand_value" value="hand_value + cards_in_hand_number[i]" />
+            </action>
+            <set var="i" value="i + 1" />
+        </repeat>
+        <set var="i" value="0" />
+        <repeat times="20">
+            <!-- Ace cards -->
+            <action filter="cards_in_hand_number[i]=1">
+                <set var="calc" value="hand_value + 11" />
+                <action filter="calc=22..">
+                    <set var="hand_value" value="hand_value + 1" />
+                </action>
+                <action filter="not(calc=22..)">
+                    <set var="hand_value" value="hand_value + 11" />
+                </action>
+            </action>
+            <set var="i" value="i + 1" />
+        </repeat>
+    </action>
+
+    <action id="deal-dealer-card" scope="match" expose="true">
+        <!-- Deal first card (face up) -->
+        <set var="dealer_cards_in_hand_number" index="dealer_card_i" value="floor(random() * 13) + 1" />
+        <set var="dealer_cards_in_hand_suit" index="dealer_card_i" value="floor(random() * 4) + 1" />
+        <set var="dealer_card_i" value="dealer_card_i + 1" />
+        <action id="set-dealer-hand-value" />
+    </action>
+
+    <action id="set-dealer-hand-value" scope="match">
+        <set var="d" value="0" />
+        <set var="dealer_hand_value" value="0" />
+        <repeat times="20">
+            <!-- Face cards -->
+            <action filter="any(dealer_cards_in_hand_number[d]=11,dealer_cards_in_hand_number[d]=12,dealer_cards_in_hand_number[d]=13)">
+                <set var="dealer_hand_value" value="dealer_hand_value + 10" />
+            </action>
+            <!-- Plain value -->
+            <action filter="not(any(dealer_cards_in_hand_number[d]=1,dealer_cards_in_hand_number[d]=11,dealer_cards_in_hand_number[d]=12,dealer_cards_in_hand_number[d]=13))">
+                <set var="dealer_hand_value" value="dealer_hand_value + dealer_cards_in_hand_number[d]" />
+            </action>
+            <set var="d" value="d + 1" />
+        </repeat>
+        <set var="d" value="0" />
+        <repeat times="20">
+            <!-- Ace cards -->
+            <action filter="dealer_cards_in_hand_number[d]=1">
+                <set var="dcalc" value="dealer_hand_value + 11" />
+                <action filter="dcalc=22..">
+                    <set var="dealer_hand_value" value="dealer_hand_value + 1" />
+                </action>
+                <action filter="not(dcalc=22..)">
+                    <set var="dealer_hand_value" value="dealer_hand_value + 11" />
+                </action>
+            </action>
+            <set var="d" value="d + 1" />
+        </repeat>
+    </action>
+    <!-- Split dealing -->
+    <action id="deal-split-card" scope="player" expose="true">
+        <action filter="split_card_i=0..19">
+            <set var="split_cards_in_hand_number" index="split_card_i" value="floor(random() * 13) + 1" />
+            <set var="split_cards_in_hand_suit" index="split_card_i" value="floor(random() * 4) + 1" />
+            <message text="You were dealt a {0} of {1}">
+                <replacements>
+                    <switch id="0" value="split_cards_in_hand_number[split_card_i]">
+                        <case match="1" result="A" />
+                        <case match="2" result="2" />
+                        <case match="3" result="3" />
+                        <case match="4" result="4" />
+                        <case match="5" result="5" />
+                        <case match="6" result="6" />
+                        <case match="7" result="7" />
+                        <case match="8" result="8" />
+                        <case match="9" result="9" />
+                        <case match="10" result="10" />
+                        <case match="11" result="J" />
+                        <case match="12" result="Q" />
+                        <case match="13" result="K" />
+                    </switch>
+                    <switch id="1" value="split_cards_in_hand_suit[split_card_i]">
+                        <case match="${HEARTS}" result="`eHearts" />
+                        <case match="${DIAMONDS}" result="`eDiamonds" />
+                        <case match="${CLUBS}" result="`eClubs" />
+                        <case match="${SPADES}" result="`eSpades" />
+                    </switch>
+                </replacements>
+            </message>
+            <set var="split_card_i" value="split_card_i + 1" />
+        </action>
+        <action filter="split_card_i=20..">
+            <message text="`cYour hand is full?? wtf" />
+        </action>
+        <action id="set-split-hand-value" />
+    </action>
+
+    <action id="set-split-hand-value" scope="player">
+        <set var="i" value="0" />
+        <set var="split_hand_value" value="0" />
+        <repeat times="20">
+            <!-- Face cards -->
+            <action filter="any(split_cards_in_hand_number[i]=11,split_cards_in_hand_number[i]=12,split_cards_in_hand_number[i]=13)">
+                <set var="split_hand_value" value="split_hand_value + 10" />
+            </action>
+            <!-- Plain value -->
+            <action filter="not(any(split_cards_in_hand_number[i]=1,split_cards_in_hand_number[i]=11,split_cards_in_hand_number[i]=12,split_cards_in_hand_number[i]=13))">
+                <set var="split_hand_value" value="split_hand_value + split_cards_in_hand_number[i]" />
+            </action>
+            <set var="i" value="i + 1" />
+        </repeat>
+        <set var="i" value="0" />
+        <repeat times="20">
+            <!-- Ace cards -->
+            <action filter="split_cards_in_hand_number[i]=1">
+                <set var="calc" value="split_hand_value + 11" />
+                <action filter="calc=22..">
+                    <set var="split_hand_value" value="split_hand_value + 1" />
+                </action>
+                <action filter="not(calc=22..)">
+                    <set var="split_hand_value" value="split_hand_value + 11" />
+                </action>
+            </action>
+            <set var="i" value="i + 1" />
+        </repeat>
+    </action>
+
+    <!-- Player hand detection -->
+    <trigger filter="bust-filter" scope="player">
+        <action id="bust" scope="player" expose="true">
+            <message text="`cBusted!"/>
+            <set var="busted" value="1"/>   <!-- Used for invisibility kit -->
+            <sound key="mob.villager.hit" volume="0.75" pitch="0.5"/>
+            <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+            <set var="blackjack_table_1_results" index="p" value="hand_value"/>
+            <switch-scope inner="match">
+                <set var="table_currently_checking" value="${TABLE_1}" />
+                <action id="select-next-player"/>
+            </switch-scope>
+        </action>
+    </trigger>
+
+    <trigger filter="all(blackjack-filter,blackjack_player_state=${WAITING_ON_MOVE})" scope="player">
+        <action id="blackjack-action" scope="player" expose="true">
+            <message text="`cBlackjack!"/>
+            <set var="blackjack_multiplier" value="1" />
+            <action filter="all(cards_in_hand_number[2]=0,split=0)">    <!-- 2 card blackjack, NO split -->
+                <set var="blackjack_table_1_results" index="p" value="21"/>
+                <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_multiplier" value="1.5"/>   <!-- 3:2 -->
+                <set var="blackjack_table_1_modifiers" index="p" value="1"/>
+                <switch-scope inner="match">
+                    <set var="table_currently_checking" value="${TABLE_1}" />
+                    <action id="select-next-player"/>
+                </switch-scope>
+            </action>
+            <action filter="all(not(cards_in_hand_number[2]=0),split=0)">   <!-- Blackjack more than 3 cards, NO split -->
+                <set var="blackjack_table_1_results" index="p" value="21"/>
+                <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_multiplier" value="1"/>     <!-- 1:1 -->
+                <set var="blackjack_table_1_modifiers" index="p" value="4"/>
+                <switch-scope inner="match">
+                    <set var="table_currently_checking" value="${TABLE_1}" />
+                    <action id="select-next-player"/>
+                </switch-scope>
+            </action>
+            <action filter="all(not(cards_in_hand_number[2]=0),split=2)">   <!-- Blackjack in 3 cards AFTER double down -->
+                <set var="blackjack_table_1_results" index="p" value="21"/>
+                <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_multiplier" value="2"/>     <!-- 2:1 -->
+                <set var="blackjack_table_1_modifiers" index="p" value="3"/>
+                <switch-scope inner="match">
+                    <set var="table_currently_checking" value="${TABLE_1}" />
+                    <action id="select-next-player"/>
+                </switch-scope>
+            </action>
+        </action>
+    </trigger>
+
+    <trigger filter="all(split-blackjack-filter,not(all(blackjack_player_state=1,blackjack_player_split_state=1)))" scope="player">
+        <action id="split-blackjack-action" scope="player" expose="true">
+            <action filter="all(split_cards_in_hand_number[2]=0,split=2)">   <!-- Blackjack in 2 in split pile -->
+                <set var="blackjack_table_1_split_results" index="p" value="21"/>
+                <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_split_multiplier" value="1.5"/>     <!-- 3:2 -->
+                <set var="blackjack_table_1_split_modifiers" index="p" value="1"/>
+            </action>
+            <action filter="all(not(split_cards_in_hand_number[2]=0),split=2)">   <!-- Blackjack in more than 3 cards in split pile -->
+                <set var="blackjack_table_1_split_results" index="p" value="21"/>
+                <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_split_multiplier" value="1"/>     <!-- 1:1 -->
+                <set var="blackjack_table_1_split_modifiers" index="p" value="4"/>
+            </action>
+            <action filter="all(blackjack-filter,cards_in_hand_number[2]=0,split_cards_in_hand_number[2]=0,split=2)">   <!-- Blackjack in 2 cards in both piles -->
+                <set var="blackjack_table_1_split_results" index="p" value="21"/>
+                <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_multiplier" value="1.5"/>     <!-- 3:2 -->
+                <set var="blackjack_split_multiplier" value="1.5"/>     <!-- 3:2 -->
+                <set var="blackjack_table_1_modifiers" index="p" value="1"/>
+                <set var="blackjack_table_1_split_modifiers" index="p" value="1"/>
+                <message text="`bBlackjack in both piles. Moving to next player"/>    <!-- TEMP MSG REMOVE -->
+                <switch-scope inner="match">
+                    <set var="table_currently_checking" value="${TABLE_1}" />
+                    <action id="select-next-player"/>
+                </switch-scope>
+            </action>
+            <action filter="all(blackjack-filter,not(cards_in_hand_number[2]=0),not(split_cards_in_hand_number[2]=0),split=2)">   <!-- Blackjack in more than 2 cards in both piles -->
+                <set var="blackjack_table_1_split_results" index="p" value="21"/>
+                <set var="blackjack_player_state" value="${PLAYED_HAND}"/>                
+                <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_multiplier" value="1"/>     <!-- 1:1 -->
+                <set var="blackjack_split_multiplier" value="1"/>     <!-- 1:1 -->
+                <set var="blackjack_table_1_modifiers" index="p" value="4"/>  
+                <set var="blackjack_table_1_split_modifiers" index="p" value="4"/>
+                <message text="`bBlackjack in both piles. Moving to next player"/>    <!-- TEMP MSG REMOVE -->
+                <switch-scope inner="match">
+                    <set var="table_currently_checking" value="${TABLE_1}" />
+                    <action id="select-next-player"/>
+                </switch-scope>
+            </action>
+        </action>
+    </trigger>
+
+
+    <trigger filter="split-bust-filter" scope="player">
+        <action id="split-bust" scope="player" expose="true">
+            <message text="`cSplit busted!"/>
+            <!-- <set var="split_busted" value="1"/> -->   <!-- Used for invisibility kit FIXME: jules knows -->
+            <sound key="mob.villager.hit" volume="0.75" pitch="0.5"/>
+            <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+            <set var="blackjack_table_1_split_results" index="p" value="split_hand_value"/>
+        </action>
+    </trigger>
+
+    <!-- Dealer detections -->
+    <trigger filter="dealer-hit-filter" scope="match">
+        <action id="dealer-hit" scope="match" expose="true">
+            <message text="`6dealer hit"/>   <!-- TEMP MSG REMOVE -->
+            <action id="deal-dealer-card"/>
+            <message text="`aDealer was dealt a `f{0} `aof {1}">
+                <replacements>
+                    <switch id="0" value="dealer_cards_in_hand_number[dealer_card_i-1]">
+                        <case match="1" result="A" />
+                        <case match="2" result="2" />
+                        <case match="3" result="3" />
+                        <case match="4" result="4" />
+                        <case match="5" result="5" />
+                        <case match="6" result="6" />
+                        <case match="7" result="7" />
+                        <case match="8" result="8" />
+                        <case match="9" result="9" />
+                        <case match="10" result="10" />
+                        <case match="11" result="J" />
+                        <case match="12" result="Q" />
+                        <case match="13" result="K" />
+                    </switch>
+                    <switch id="1" value="dealer_cards_in_hand_suit[dealer_card_i-1]">
+                        <case match="${HEARTS}" result="`eHearts" />
+                        <case match="${DIAMONDS}" result="`eDiamonds" />
+                        <case match="${CLUBS}" result="`eClubs" />
+                        <case match="${SPADES}" result="`eSpades" />
+                    </switch>
+                </replacements>
+            </message>
+            <action id="set-dealer-hand-value"/>
+            <message text="`aDealer's current value: `f{0}">
+                <replacements>
+                    <decimal id="0" value="dealer_hand_value" />
+                </replacements>
+            </message>
+            <action filter="dealer_hand_value=2..16">
+                <action id="dealer-hit"/>
+            </action>
+        </action>
+    </trigger>
+
+    <trigger filter="dealer-stand-filter" scope="match">
+        <action id="dealer-stand" scope="match" expose="true">
+            <message text="`6dealer stands"/>   <!-- TEMP MSG REMOVE -->
+            <set var="blackjack_is_dealers_turn" value="0"/>
+            <set var="blackjack_compare_hands" value="1"/>
+            <!-- <action id="blackjack-table-round-end"/> -->
+        </action>
+    </trigger>
+
+    <trigger filter="dealer-blackjack-filter" scope="match">
+        <action id="dealer-blackjack" scope="match" expose="true">
+            <message text="`6`ldealer blackjack"/>   <!-- TEMP MSG REMOVE -->
+            <set var="blackjack_is_dealers_turn" value="0"/>
+            <set var="blackjack_compare_hands" value="1"/>
+        </action>
+    </trigger>
+
+    <trigger filter="dealer-bust-filter" scope="match">
+        <action id="dealer-bust" scope="match" expose="true">
+            <message text="`6dealer bust"/>   <!-- TEMP MSG REMOVE -->
+            <set var="blackjack_is_dealers_turn" value="0"/>
+            <set var="blackjack_compare_hands" value="1"/>
+        </action>
+    </trigger>
+
+    <!-- Dealer deal card debug -->
+    <action id="dealer-debug" scope="match" expose="true">
+        <message text="`6Dealer debug msg"/>     <!-- TEMP MSG REMOVE -->
+        <set var="blackjack_is_dealers_turn" value="1"/>
+        <message text="`aDealer flips over second card"/>   <!-- Fix wording later -->
+        <message text="`aDealer was dealt a `f{0} `aof {1}">
+            <replacements>
+                <switch id="0" value="dealer_cards_in_hand_number[1]">
+                    <case match="1" result="A" />
+                    <case match="2" result="2" />
+                    <case match="3" result="3" />
+                    <case match="4" result="4" />
+                    <case match="5" result="5" />
+                    <case match="6" result="6" />
+                    <case match="7" result="7" />
+                    <case match="8" result="8" />
+                    <case match="9" result="9" />
+                    <case match="10" result="10" />
+                    <case match="11" result="J" />
+                    <case match="12" result="Q" />
+                    <case match="13" result="K" />
+                </switch>
+                <switch id="1" value="dealer_cards_in_hand_suit[1]">
+                    <case match="${HEARTS}" result="`eHearts" />
+                    <case match="${DIAMONDS}" result="`eDiamonds" />
+                    <case match="${CLUBS}" result="`eClubs" />
+                    <case match="${SPADES}" result="`eSpades" />
+                </switch>
+            </replacements>
+        </message>
+        <message text="`aDealer's current value: `f{0}"> <!-- Improve msg later -->
+            <replacements>
+                <decimal id="0" value="dealer_hand_value" />
+            </replacements>
+        </message>
+    </action>
+    <!-- Force a split debug -->
+    <action id="split-debug" scope="player" expose="true">
+        <!-- <set var="split" value="2"/> -->
+        <set var="cards_in_hand_number" index="0" value="7"/>
+        <set var="cards_in_hand_suit" index="0" value="3"/>
+        <set var="cards_in_hand_number" index="1" value="7"/>
+        <set var="cards_in_hand_suit" index="1" value="3"/>
+        <set var="blackjack_player_split_state" value="${WAITING_ON_MOVE}"/>
+    </action>
+
+    <!-- Card actions -->
+    <action id="hit-action" scope="player" expose="true">
+        <message text="Hit"/>   <!-- TEMP MSG REMOVE -->
+        <action id="deal-card"/>
+        <message text="Current value: {0}">
+            <replacements>
+                <decimal id="0" value="hand_value" />
+            </replacements>
+        </message>
+    </action>
+    <action id="stand-action" scope="player" expose="true">
+        <message text="Stand"/>   <!-- TEMP MSG REMOVE -->
+        <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+        <set var="blackjack_table_1_results" index="p" value="hand_value"/>
+        <action filter="split=0">
+            <switch-scope inner="match">
+                <set var="table_currently_checking" value="${TABLE_1}" />
+                <action id="select-next-player"/>
+            </switch-scope>
+        </action>
+    </action>
+    <action id="double-down-action" scope="player" expose="true">
+        <message text="`bDouble down"/> <!-- TEMP MSG REMOVE -->
+        <set var="balance" value="balance-2(bet)"/>
+        <set var="doubled_down" value="3"/>
+        <set var="blackjack_table_1_modifiers" index="p" value="doubled_down"/>
+        <action id="deal-card"/>
+        <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+        <set var="blackjack_table_1_results" index="p" value="hand_value"/>
+        <switch-scope inner="match">
+            <set var="table_currently_checking" value="${TABLE_1}" />
+            <action id="select-next-player"/>
+        </switch-scope>
+    </action>
+    <action id="split-action" scope="player" expose="true">
+        <message text="`bSplit"/>
+        <set var="split" value="2"/>
+        <set var="blackjack_player_split_state" value="${WAITING_ON_MOVE}"/>
+        <set var="blackjack_table_1_modifiers" index="p" value="split"/>
+        <set var="balance" value="balance-bet"/>
+        <!-- Split between 2 variables -->
+        <set var="split_cards_in_hand_number" index="0" value="cards_in_hand_number[1]"/>
+        <set var="split_cards_in_hand_suit" index="0" value="cards_in_hand_suit[1]"/>
+        <set var="cards_in_hand_number" index="1" value="0"/>
+        <set var="cards_in_hand_suit" index="1" value="0"/>
+        <action id="set-hand-value"/>
+        <action id="set-split-hand-value"/>
+        <!-- Deal card to first pile -->
+        <action id="deal-card"/>
+        <message text="Main hand value: {0}">
+            <replacements>
+                <decimal id="0" value="hand_value" />
+            </replacements>
+        </message>
+        <!-- Deal card to second pile -->
+        <action id="deal-split-card"/>
+        <message text="Split hand value: {0}">
+            <replacements>
+                <decimal id="0" value="split_hand_value" />
+            </replacements>
+        </message>
+    </action>
+    <action id="split-hit-action" scope="player" expose="true">
+        <message text="Split hit"/>   <!-- TEMP MSG REMOVE -->
+        <action id="deal-split-card"/>
+        <message text="Current value: {0} (split)"> <!-- Improve msg later -->
+            <replacements>
+                <decimal id="0" value="split_hand_value" />
+            </replacements>
+        </message>
+    </action>
+    <action id="split-stand-action" scope="player" expose="true"> 
+        <message text="Split stand"/>   <!-- TEMP MSG REMOVE -->
+        <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+        <set var="blackjack_table_1_split_results" index="p" value="split_hand_value"/>
+    </action>
+    <!-- Split next turn detection -->
+    <trigger scope="player">
+        <filter>
+            <all>
+                <variable var="blackjack_player_state">${PLAYED_HAND}</variable>
+                <variable var="blackjack_player_split_state">${PLAYED_HAND}</variable>                
+            </all>
+        </filter>
+        <action id="split-end-of-turn-action" scope="player" expose="true">
+            <message text="`bBlackjack player made move for both piles, moving to next player"/>   <!-- TEMP MSG REMOVE -->
+            <switch-scope inner="match">
+                <set var="table_currently_checking" value="${TABLE_1}" />
+                <action id="select-next-player"/>
+            </switch-scope>
+        </action>
+    </trigger>
+
+    <!-- Round results logic -->
+    <trigger filter="blackjack_compare_hands=1" scope="match">
+        <action id="results-action" scope="match" expose="true">
+            <!-- Push detection (20) -->
+            <action filter="dealer_hand_value=20">
+                <repeat times="7">
+                    <action filter="blackjack_table_1_results[r]=20">
+                        <set var="blackjack_table_1_push" index="r" value="1"/>
+                        <set var="player_found" value="0"/>
+                        <switch-scope inner="player">
+                            <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                                <set var="player_found" value="1"/>
+                                <set var="balance" value="balance + bet"/>  <!-- Return original bet -->
+                            </action>
+                        </switch-scope>
+                    </action>
+                    <action filter="blackjack_table_1_split_results[r]=20">
+                        <set var="blackjack_table_1_split_push" index="r" value="1"/>
+                        <set var="player_found" value="0"/>
+                        <switch-scope inner="player">
+                            <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                                <set var="player_found" value="1"/>
+                                <set var="balance" value="balance + bet"/>
+                            </action>
+                        </switch-scope>
+                    </action>
+                    <set var="r" value="r+1"/>
+                </repeat>
+                <set var="r" value="0"/>
+            </action>
+            <!-- Push detection (21) -->
+            <action filter="dealer_hand_value=21">
+                <repeat times="7">
+                    <action filter="blackjack_table_1_results[r]=21">
+                        <set var="blackjack_table_1_blackjack_push" index="r" value="1"/>
+                        <set var="player_found" value="0"/>
+                        <switch-scope inner="player">
+                            <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                                <set var="player_found" value="1"/>
+                                <set var="balance" value="balance + bet"/>  <!-- Return original bet -->
+                            </action>
+                        </switch-scope>
+                    </action>
+                    <action filter="blackjack_table_1_split_results[r]=21">
+                        <set var="blackjack_table_1_split_blackjack_push" index="r" value="1"/>
+                        <set var="player_found" value="0"/>
+                        <switch-scope inner="player">
+                            <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                                <set var="player_found" value="1"/>
+                                <set var="balance" value="balance + bet"/>
+                            </action>
+                        </switch-scope>
+                    </action>
+                    <set var="r" value="r+1"/>
+                </repeat>
+                <set var="r" value="0"/>
+            </action>
+            <!-- Pile 1 detection -->
+            <set var="r" value="0"/>
+            <repeat times="7">
+                <action filter="all(not(blackjack_table_1_results[r]=0),blackjack_table_1_results[r]=2..20,not(blackjack_table_1_push[r]=1),blackjack_table_1_modifiers[r]=0)">
+                    <set var="table_1_compare" index="r" value="dealer_hand_value - blackjack_table_1_results[r]"/>
+                    <!-- Player beats dealer -->
+                    <action filter="table_1_compare[r]=-100..-0.1">
+                        <set var="player_found" value="0"/>
+                        <set var="blackjack_table_1_modifiers" index="r" value="6"/>
+                        <switch-scope inner="player">
+                            <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                                <set var="player_found" value="1"/>
+                                <set var="balance" value="balance + (bet * 2)"/>  <!-- Bet + profit -->
+                            </action>
+                        </switch-scope>
+                        <action filter="player_found=0">
+                            <set var="blackjack_table_1_results" index="r" value="0"/>
+                        </action>
+                    </action>
+                    <!-- Player loses to dealer -->
+                    <action filter="table_1_compare[r]=0.1..100">
+                        <set var="blackjack_table_1_modifiers" index="r" value="7"/>
+                    </action>
+                    <!-- Player dealer tie (player loses) -->
+                    <action filter="table_1_compare[r]=0">
+                        <set var="blackjack_table_1_modifiers" index="r" value="7"/>
+                    </action>
+                </action>
+                <!-- Dealer busts -->
+                <action filter="all(not(blackjack_table_1_results[r]=0),blackjack_table_1_results[r]=2..20,dealer_hand_value=22..,blackjack_table_1_modifiers[r]=0)">
+                    <set var="player_found" value="0"/>
+                    <set var="blackjack_table_1_modifiers" index="r" value="6"/>
+                    <switch-scope inner="player">
+                        <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                            <set var="player_found" value="1"/>
+                            <set var="balance" value="balance + (bet * 2)"/>
+                        </action>
+                    </switch-scope>
+                    <action filter="player_found=0">
+                        <set var="blackjack_table_1_results" index="r" value="0"/>
+                    </action>
+                </action>
+                <set var="r" value="r+1"/>
+            </repeat>
+            <set var="r" value="0"/>
+            <!-- Pile 2 (split) detection -->
+            <set var="r" value="0"/>
+            <repeat times="7">
+                <action filter="all(not(blackjack_table_1_split_results[r]=0),blackjack_table_1_split_results[r]=2..20,not(blackjack_table_1_split_push[r]=1),blackjack_table_1_split_modifiers[r]=0)">
+                    <set var="table_1_compare" index="r" value="dealer_hand_value - blackjack_table_1_split_results[r]"/>
+                    <!-- Player beats dealer -->
+                    <action filter="table_1_compare[r]=-100..-0.1">
+                        <set var="player_found" value="0"/>
+                        <set var="blackjack_table_1_split_modifiers" index="r" value="6"/>
+                        <switch-scope inner="player">
+                            <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                                <set var="player_found" value="1"/>
+                                <set var="balance" value="balance + (bet * 2)"/>
+                            </action>
+                        </switch-scope>
+                        <action filter="player_found=0">
+                            <set var="blackjack_table_1_split_results" index="r" value="0"/>
+                        </action>
+                    </action>
+                    <!-- Player loses to dealer -->
+                    <action filter="table_1_compare[r]=0.1..100">
+                        <set var="blackjack_table_1_split_modifiers" index="r" value="7"/>
+                    </action>
+                    <!-- Player dealer tie (player loses) -->
+                    <action filter="table_1_compare[r]=0">
+                        <set var="blackjack_table_1_split_modifiers" index="r" value="7"/>
+                    </action>
+                </action>
+                <!-- Dealer busts -->
+                <action filter="all(not(blackjack_table_1_split_results[r]=0),blackjack_table_1_split_results[r]=2..20,dealer_hand_value=22..,blackjack_table_1_split_modifiers[r]=0)">
+                    <set var="player_found" value="0"/>
+                    <set var="blackjack_table_1_split_modifiers" index="r" value="6"/>
+                    <switch-scope inner="player">
+                        <action filter="all(p-r=0,is_playing=${GAME_BLACKJACK},blackjack_current_table=${TABLE_1})">
+                            <set var="player_found" value="1"/>
+                            <set var="balance" value="balance + (bet * 2)"/>
+                        </action>
+                    </switch-scope>
+                    <action filter="player_found=0">
+                        <set var="blackjack_table_1_split_results" index="r" value="0"/>
+                    </action>
+                </action>
+                <set var="r" value="r+1"/>
+            </repeat>
+            <set var="r" value="0"/>
+            <action id="results-msg-action"/>
+        </action>
+    </trigger>
+
+    <!-- Round results msg -->
+    <action id="results-msg-action" scope="match" expose="true">
+        <message text="`7`l`m                        "/>
+        <message text="`a`l◆ `2Dealer`8: `f{value} {status}">
+            <replacements>
+                <decimal id="value" value="dealer_hand_value"/>
+                <switch id="status" value="dealer_hand_value">
+                    <case match="21" result="`6`l✦ `6BLACKJACK"/>
+                    <case match="22.." result="`4`l✖ `4BUST"/>
+                </switch>
+            </replacements>
+        </message>
+        <message text="`7`l`m                        "/>
+        <repeat times="7">
+            <action filter="show-results-filter">
+                <message text="`8`l» `fPlayer {player}`8: `f{value} {status} {push} {push2} {multi}">
+                    <replacements>
+                        <decimal id="player" value="r+1"/>
+                        <decimal id="value" value="blackjack_table_1_results[r]"/>
+                        <switch id="status" value="blackjack_table_1_results[r]">
+                            <case match="21" result="`6`l✦ `6BLACKJACK"/>
+                            <case match="22.." result="`4`l✖ `4BUST"/>
+                        </switch>
+                        <switch id="push" value="blackjack_table_1_push[r]">
+                            <case match="1" result="`e`l⇄ `ePUSH"/>
+                        </switch>
+                        <switch id="push2" value="blackjack_table_1_blackjack_push[r]">
+                            <case match="1" result="`6`l⇄ `6PUSH"/>
+                        </switch>
+                        <switch id="multi" value="blackjack_table_1_modifiers[r]">
+                            <case match="1" result="`8`l(1.5x)"/>   <!-- Blackjack in 2 -->
+                            <case match="2" result="`8`l(1x)"/>     <!-- Split -->
+                            <case match="3" result="`8`l(2x)"/>     <!-- Double down -->
+                            <case match="4" result="`8`l(1x)"/>     <!-- Blackjack in >2 -->
+                            <case match="5" result="`8`l(1x)"/>     <!-- Push -->
+                            <case match="6" result="`8`l(1x)"/>     <!-- No push/blackjack beat dealer by pure skill -->
+                            <case match="7" result=""/>             <!-- you 17: dealer 18, you lose and get nothing -->
+                        </switch>
+                    </replacements>
+                </message>
+            </action>
+            <action filter="show-split-results-filter">
+                <message text="`7`l└ `7Split`8: `f{value} {status} {push} {push2} {multi}">
+                    <replacements>
+                        <decimal id="value" value="blackjack_table_1_split_results[r]"/>    <!-- TEMP MSG REDO LATER -->
+                        <switch id="status" value="blackjack_table_1_split_results[r]">
+                            <case match="21" result="`6`l✦ `6BLACKJACK"/>
+                            <case match="22.." result="`4`l✖ `4BUST"/>
+                        </switch>
+                        <switch id="push" value="blackjack_table_1_split_push[r]">
+                            <case match="1" result="`e`l⇄ `ePUSH"/>
+                        </switch>
+                        <switch id="push2" value="blackjack_table_1_split_blackjack_push[r]">
+                            <case match="1" result="`6`l⇄ `6PUSH"/>
+                        </switch>                                
+                        <switch id="multi" value="blackjack_table_1_split_modifiers[r]">
+                            <case match="1" result="`8`l(1.5x)"/>   <!-- Blackjack in 2 -->
+                            <case match="2" result="`8`l(1x)"/>     <!-- Split -->
+                            <case match="4" result="`8`l(1x)"/>     <!-- Blackjack in >2 -->
+                            <case match="5" result="`8`l(1x)"/>     <!-- Push -->
+                            <case match="6" result="`8`l(1x)"/>     <!-- No push/blackjack beat dealer by pure skill -->
+                            <case match="7" result=""/>             <!-- you 17: dealer 18, you lose and get nothing -->
+                        </switch>
+                    </replacements>
+                </message>
+            </action>
+            <set var="r" value="r+1"/>
+        </repeat>
+        <set var="r" value="0"/>
+        <message text="`7`l`m                        "/>
+        <set var="blackjack_table_progress" index="0" value="0"/> 
+        <action id="blackjack-table-resetter"/>
+    </action>
+
+    <!-- Blackjack table reset at end of round -->
+    <action id="blackjack-table-resetter" scope="match" expose="true">
+        <message text="`5Table resetter"/>      <!-- TEMP MSG REMOVE -->
+        <action filter="blackjack_table_progress[0]=0">
+            <action>
+                <set var="blackjack_compare_hands" value="0"/>
+                <set var="blackjack_is_dealers_turn" value="0"/>
+                <set var="d" value="0"/>
+                <set var="dcalc" value="0"/>
+                <set var="dealer_card_i" value="0"/>
+                <set var="dealer_hand_value" value="0"/>
+            
+            </action>
+            <switch-scope inner="player">
+                <action filter="all(blackjack-table-1,not(p=-1))">
+                    <set var="p" value="-1"/>
+                    <set var="r" value="-1"/>
+                    <teleport x="-22.5" y="9" z="6.5" yaw="90"/>
+                    <set var="hand_value" value="0"/>
+                    <set var="card_i" value="0"/>
+                    <set var="is_playing" value="0"/>
+                    <set var="split_hand_value" value="0"/>
+                    <set var="split" value="0"/>
+                    <set var="split_busted" value="0"/>
+                    <set var="split_card_i" value="0"/>
+                    <set var="split" value="0"/>
+                    <set var="cards_in_hand_number" index="*" value="0"/>
+                    <set var="can_split" value="-1"/>
+                    <!-- <set var="" value=""/>
+                    <set var="" value=""/>
+                    <set var="" value=""/> -->
+                </action>
+            </switch-scope>
+        </action>
+    </action>
+
+
+    <!-- Stalemate stuff -->
+    <trigger filter="blackjack-stalemate-countdown-pulse" scope="player">
+        <action id="blackjack-stalemate" scope="player" expose="true">
+            <message text="`7Blackjack stalemate msg"/>
+            <sound key="${block.note_block.pling}" pitch="1.19"/>
+            <action filter="blackjack-stalemate-reset-var">
+                <set var="blackjack_player_state" value="${PLAYED_HAND}"/>
+                <set var="blackjack_table_1_results" index="p" value="hand_value"/>
+                <action filter="split=2">
+                    <set var="blackjack_player_split_state" value="${PLAYED_HAND}"/>
+                    <set var="blackjack_table_1_split_results" index="p" value="split_hand_value"/>
+                    <!-- Detection for hand results. IE auto stalls BUT did player get a blackjack? (This is needed for table results) 
+                            When split: set 
+                            blackjack_table_1_modifiers
+                            blackjack_table_1_split_modifiers
+                    -->
+                </action>
+                <switch-scope inner="match">
+                    <set var="table_currently_checking" value="${TABLE_1}" />
+                    <action id="select-next-player"/>
+                </switch-scope>
+            </action>
+        </action>
+    </trigger>
+
+    <!-- DEPENDS ON table_currently_checking -->
+    <action id="select-next-player" scope="match">
+        <set var="possible_next_player" value="99999" />
+        <switch-scope inner="player">
+            <set var="compare_table" value="table_currently_checking - blackjack_current_table" />
+            <action filter="compare_table=0">
+                <set var="compare" value="p - blackjack_tables_current_turn[table_currently_checking]" />
+                <action filter="compare=1..">
+                    <set var="possible_next_player" value="min(possible_next_player,p)" />
+                </action>
+            </action>
+        </switch-scope>
+        <action filter="all(possible_next_player=99999,not(blackjack_tables_current_turn[table_currently_checking]=-1))">
+            <action id="dealer-debug" />
+        </action>
+        <action filter="not(possible_next_player=99999)">
+            <set var="blackjack_tables_current_turn" index="table_currently_checking" value="possible_next_player" />
+            <message text="Current turn: {0}">
+                <replacements>
+                    <decimal id="0" value="possible_next_player" />
+                </replacements>
+            </message>
+            <switch-scope inner="player">
+                <set var="compare_table" value="table_currently_checking - blackjack_current_table" />
+                <set var="compare" value="blackjack_tables_current_turn[table_currently_checking] - p" />
+                <action filter="all(compare_table=0,compare=0)">
+                    <set var="blackjack_player_state" value="${WAITING_ON_MOVE}" />
+                </action>
+            </switch-scope>
+        </action>
+    </action>
+
+    <trigger scope="player">
+        <filter>
+            <all>
+                <variable var="split">0</variable>
+                <not>
+                    <variable var="blackjack_player_split_state">${NOT_PLAYING}</variable>
+                </not>
+            </all>
+        </filter>
+        <action scope="player">
+            <set var="blackjack_player_split_state" value="${NOT_PLAYING}"/>
+        </action>
+    </trigger>
+
+
+
+    <!-- Debug -->
+    <action id="deck-kit" scope="player" expose="true">
+        <kit id="black_cards_deck"/>
+    </action>
+    <action id="push-debug" scope="player" expose="true">
+        <set var="hand_value" value="20"/>
+        <switch-scope inner="match" outer="player">
+            <set var="blackjack_is_dealers_turn" value="1"/>
+            <set var="dealer_hand_value" value="20"/>
+            <set var="blackjack_is_dealers_turn" value="0"/>
+            <set var="blackjack_compare_hands" value="1"/>
+            <set var="blackjack_table_1_results" index="0" value="20"/>
+        </switch-scope>
+    </action>
+    <action id="debug-kit" scope="match" expose="true">
+        <switch-scope inner="player">
+            <kit id="hit-kit"/>
+            <kit id="stand-kit"/>
+            <kit id="double-down-kit"/>
+            <kit id="split-kit"/>
+            <kit id="split-hit-kit"/>
+            <kit id="split-stand-kit"/>
+        </switch-scope>
+    </action>
+</actions>
+
+
+<!-- Blackjack animation actions -->
+<actions>
+    <trigger scope="player">
+        <filter>
+            <after duration="1s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <helmet unbreakable="true" material="gold helmet" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="1.2s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <clear/>
+                <chestplate unbreakable="true" material="gold chestplate" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="1.4s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <clear/>
+                <leggings unbreakable="true" material="gold leggings" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="1.6s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <clear/>
+                <boots unbreakable="true" material="gold boots" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <clear />
+                <boots unbreakable="true" material="gold boots" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2.2s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <leggings unbreakable="true" material="gold leggings" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2.4s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <chestplate unbreakable="true" material="gold chestplate" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2.6s" filter="blackjack-filter" />
+        </filter>
+        <action>
+            <kit>
+                <helmet unbreakable="true" material="gold helmet" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+</actions>
+<!-- Double blackjack animation -->
+<actions>   
+    <trigger scope="player">
+        <filter>
+            <after duration="1s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <helmet unbreakable="true" material="diamond helmet" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="1.2s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <clear/>
+                <chestplate unbreakable="true" material="diamond chestplate" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="1.4s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <clear/>
+                <leggings unbreakable="true" material="diamond leggings" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="1.6s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <clear/>
+                <boots unbreakable="true" material="diamond boots" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <clear />
+                <boots unbreakable="true" material="diamond boots" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2.2s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <leggings unbreakable="true" material="diamond leggings" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2.4s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <chestplate unbreakable="true" material="diamond chestplate" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+    <trigger scope="player">
+        <filter>
+            <after duration="2.6s" filter="all(blackjack-filter,split-blackjack-filter)" />
+        </filter>
+        <action>
+            <kit>
+                <helmet unbreakable="true" material="diamond helmet" locked="true"/>        
+            </kit>
+        </action>
+    </trigger>
+</actions>
+
+<!-- Blackjack round startup -->
+<actions>
+    <action id="blackjack-start-all-tables" scope="match" expose="true">
+        <set var="blackjack_table_progress" index="blackjack_table_number" value="1"/>  <!-- Change to all indexes later -->
+        <message text="`3Catalyst startup msg"/>     <!-- TEMP MSG REMOVE -->
+    </action>
+    <action id="blackjack-table-1-start" scope="match" expose="true">       <!-- FIX: needs to check if anyone is queued at table, if not wait -->
+        <message text="`3Table 1 startup msg"/>     <!-- TEMP MSG REMOVE -->
+        <!-- Seat teleporting --> <!-- NEEDS TO BE UPSCALED TO WORK W/ MULTIPLE TABLES -->
+        <switch-scope inner="player" outer="match">
+            <action filter="all(blackjack_table_progress[0]=1,is_playing=${GAME_BLACKJACK})">
+                <action id="seat-tp"/>
+                <action id="blackjack-kit-applier"/>
+                <set var="blackjack_player_state" value="${WAITING_ON_TURN}"/>
+            </action>
+        </switch-scope>
+        <set var="table_currently_checking" value="${TABLE_1}" />
+        <action id="select-next-player"/>
+    </action>
+    <action id="seat-tp" scope="player">
+        <action filter="all(p=0,table-filter)">
+            <teleport x="-28.5" y="10" z="10.5" yaw="180"/>
+        </action>
+        <action filter="all(p=1,table-filter)">
+            <teleport x="-26.5" y="10" z="10.5" yaw="180"/>
+        </action>
+        <action filter="all(p=2,table-filter)">
+            <teleport x="-25.5" y="10" z="9.5" yaw="90"/>
+        </action>
+        <action filter="all(p=3,table-filter)">
+            <teleport x="-25.5" y="10" z="6.5" yaw="90"/>
+        </action>
+        <action filter="all(p=4,table-filter)">
+            <teleport x="-25.5" y="10" z="3.5" yaw="90"/>
+        </action>
+        <action filter="all(p=5,table-filter)">
+            <teleport x="-26.5" y="10" z="2.5" yaw="-180"/>
+        </action>
+        <action filter="all(p=6,table-filter)">
+            <teleport x="-28.5" y="10" z="2.5" yaw="-180"/>
+        </action>      
+    </action>
+    <trigger scope="player">
+        <filter>
+            <all>
+                <any>
+                    <all>
+                        <region id="blackjack-table-1" />
+                        <variable var="blackjack_table_progress" index="${TABLE_1}">1</variable>
+                    </all>
+                    <all>
+                        <region id="blackjack-table-2" />
+                        <variable var="blackjack_table_progress" index="${TABLE_2}">1</variable>
+                    </all>
+                </any>
+                <not>
+                    <variable var="is_playing">${GAME_BLACKJACK}</variable>
+                </not>
+            </all>
+        </filter>
+        <action id="table-running-msg" scope="player" expose="true">
+            <message text="`fThis table has already started. Wait until the round ends in order to join."/>     <!-- TEMP MSG REMOVE -->
+        </action>
+    </trigger>
+    <!-- Table starting countdown -->
+    <action id="blackjack-table-countdown-detector" scope="player" expose="true">
+        <switch-scope inner="match" outer="player">
+            <action filter="blackjack_table_progress[0]=0">
+                <switch-scope inner="player" outer="match">
+                    <message text="`1Table countdown msg"/>
+                    <repeat times="20" filter="all(not(blackjack_start_cycle_time[blackjack_current_table]=0),not(blackjack_current_table=-1))">
+                        <message text="`1test {cycle-time}">
+                            <replacements>
+                                <decimal id="cycle-time" value="blackjack_start_cycle_time[blackjack_current_table]"/>
+                            </replacements>
+                        </message>
+                        <action filter="blackjack_start_cycle_time[blackjack_current_table]=1..20">
+                            <set var="blackjack_start_cycle_time" index="blackjack_current_table" value="blackjack_start_cycle_time[blackjack_current_table]-1"/> 
+                        </action>
+                    </repeat>                                     
+                </switch-scope>
+            </action>
+        </switch-scope>
+    </action>
+    <!-- Blackjack table kit applier -->
+    <action id="blackjack-kit-applier" scope="player" expose="true">
+        <kit id="hit-kit"/>
+        <kit id="stand-kit"/>
+    </action>
+
+
+
+    <!-- Triggers -->
+    <trigger filter="blackjack-catalyst-filter" action="blackjack-start-all-tables" scope="match"/>  <!-- Blackjack catalyst -->
+    <trigger filter="blackjack-table-1-start-filter" action="blackjack-table-1-start" scope="match"/>
+    <trigger filter="table-filter" action="blackjack-table-countdown-detector" scope="player"/>
+    <!-- <trigger filter="" action="" scope=""/> -->
+    <!-- <trigger filter="" action="" scope=""/> -->
+    <!-- <trigger filter="" action="" scope=""/> -->
+</actions>
+<filters>
+    <after duration="15s" id="blackjack-catalyst-filter" message="All tables starting in {0}">    <!-- Initial trigger to start cycle of blackjack tables running -->
+        <match-started/>
+    </after>
+    <variable id="blackjack-table-1-start-filter" var="blackjack_table_progress" index="0">1</variable>     <!-- FIX needs to be generalized to all tables -->
+</filters>
+
+<!-- Kit applying actions -->
+<actions>
+    <!-- Double down kit-->
+    <trigger scope="player">
+        <filter>
+            <all>
+                <variable var="card_i">2</variable>
+                <variable var="split">0</variable>
+                <variable var="blackjack_player_state">${WAITING_ON_MOVE}</variable>
+                <variable var="balance">32..</variable>  <!-- Has money to double down -->
+            </all>
+        </filter>
+        <action id="double-down-kit-action" scope="player" expose="true">
+            <kit id="double-down-kit"/>
+        </action>
+    </trigger>
+    <!-- Split kit -->
+    <trigger scope="player">
+        <filter>
+            <all>
+                <variable var="card_i">2</variable>
+                <variable var="split">0</variable>
+                <variable var="blackjack_player_state">${WAITING_ON_MOVE}</variable>
+                <variable var="balance">16..</variable>  <!-- Has money to split (needs at least bet amount) -->
+            </all>
+        </filter>
+        <action id="split-kit-action" scope="player" expose="true">
+            <set var="can_split" value="cards_in_hand_number[0] - cards_in_hand_number[1]"/>
+            <action filter="can_split=0">  <!-- Cards match -->
+                <kit id="split-kit"/>
+            </action>
+        </action>
+    </trigger>
+
+
+    <!-- Item remover -->
+    <trigger scope="player">
+        <filter>
+            <not>
+                <all>
+                    <variable var="is_playing">${NOT_PLAYING}</variable>
+                    <variable var="cards_in_hand_number" index="2">0</variable>
+                </all>
+            </not>
+        </filter>
+        <action scope="player">
+            <replace-item ignore-metadata="true">
+                <find>diamond</find>
+                <replace>air</replace>
+            </replace-item>
+            <replace-item ignore-metadata="true">
+                <find>gold nugget</find>
+                <replace>air</replace>
+            </replace-item>
+        </action>
+    </trigger>
+    <!-- Bust kit remover -->
+    <trigger scope="player">
+        <filter>
+            <all>
+                <variable var="busted">1</variable>
+                <not>
+                    <variable var="is_playing">${NOT_PLAYING}</variable>
+                </not>
+            </all>
+        </filter>
+        <action scope="player">
+            <replace-item ignore-metadata="true">
+                <find>gold block</find>
+                <replace>air</replace>
+            </replace-item>
+            <replace-item ignore-metadata="true">
+                <find>chest</find>
+                <replace>air</replace>
+            </replace-item>
+        </action>
+    </trigger>
+    <!-- Split bust kit remover -->
+    <trigger scope="player">
+        <filter>
+            <all>
+                <variable var="split_busted">1</variable>
+                <not>
+                    <variable var="is_playing">${NOT_PLAYING}</variable>
+                </not>
+            </all>
+        </filter>
+        <action scope="player">
+            <replace-item ignore-metadata="true">
+                <find>emerald block</find>
+                <replace>air</replace>
+            </replace-item>
+            <replace-item ignore-metadata="true">
+                <find>ender chest</find>
+                <replace>air</replace>
+            </replace-item>
+        </action>
+    </trigger>
+</actions>
+
+
+
+
+
+<consumables>
+    <consumable id="bet-consumable" action="bet-action" on="click" consume="true"/>
+    <consumable id="hit-consumable" action="hit-action" on="click" consume="true"/>
+    <consumable id="stand-consumable" action="stand-action" on="click" consume="true"/>
+    <consumable id="double-down-consumable" action="double-down-action" on="click" consume="true"/>
+    <consumable id="split-consumable" action="split-action" on="click" consume="true"/>
+    <consumable id="split-hit-consumable" action="split-hit-action" on="click" consume="true"/>
+    <consumable id="split-stand-consumable" action="split-stand-action" on="click" consume="true"/>
+</consumables>
+
+<hunger>
+    <depletion>off</depletion>
+</hunger>
+</map>
+
+
+
+
+<!-- 
+>>> TODO
+    - Player disconnects mid turn, auto forfeit
+    - Blackjack turn anti stall (10-15 second turns?) (stall= auto stand)
+    - Blackjack animation clears kit 
+    - Fix messages filtering to players at a table
+    - IF split, set blackjack_player_state to ${PLAYED_HAND} after both moves are done
+
+    - Reset kit when game ends (remove blackjack armor etc)
+    - Reset vars when round ends:
+        - p, r, s
+        - cards_in_hand_number, cards_in_hand_suit ...
+        - hand_value, split_hand_value ...
+        - busted, split ...
+        - blackjack_table_1_results ...
+        - blackjack_table_progress ...
+    - Dealer doesnt properly add aces correctly, just assumes aces are 1.
+
+    
+    
+    - {Multi} replacement fix. mods need to be checked first before dealer/player compare hands if neither get push/blackjack
+    - Remove "table_1_push" "table_1_split_push" "table_1_blackjack_push" etc and incorporate into "blackjack_table_1_modifiers" and "blackjack_table_1_split_modifiers"
+    - Split:
+        1) Stand in split pile
+        2) Bust in first
+        3) Dealer makes their move
+        4) Results printed
+        5) "Blackjack player made move for both piles moving to next player" < Problem
+        5) Dealer debug fired again.
+
+
+>>> LOGIC    
+    - Push logic: Dealer/player both have 20 after turn. Neither win
+    - Dealer always hits if 16 or less
+    - Dealer always stays if 17 or more
+    - Dealer cant split/double down
+
+>>> RETURNS
+    - Bet 10 for each
+        - Blackjack in 2 (A+10): -10+10(3/2) -> 5 profit
+        - Blackjack in 3 (10,8,3): -10+10 -> 0 profit
+        - Push in 2 (A+10): -10+10 -> 0 profit
+        - Push in 3 (10,8,3): -10+10 -> 0 profit
+        - Beat dealer (busts): -10+2(10) -> 10 profit
+
+
+>>> MAP FEATURES (non blackjack related)
+    - Luck potions boost card luck (give regen=more luck)
+    - Winning a lot = higher rig factor (luck debuff) (player scoped)
+ -->
