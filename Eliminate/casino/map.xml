@@ -2,7 +2,6 @@
 <name>Casino</name>
 <version>1.0</version>
 <objective>test</objective>
-<include id="cards"/>
 <authors>
     <author uuid="d5a64b26-15ea-46c4-8319-f9c83e82a1fa"/> <!-- Eliminate -->
 </authors>
@@ -1197,9 +1196,6 @@
 
 
     <!-- Debug -->
-    <action id="deck-kit" scope="player" expose="true">
-        <kit id="black_cards_deck"/>
-    </action>
     <action id="push-debug" scope="player" expose="true">
         <set var="hand_value" value="20"/>
         <switch-scope inner="match" outer="player">
@@ -1676,4 +1672,5 @@
 >>> MAP FEATURES (non blackjack related)
     - Luck potions boost card luck (give regen=more luck)
     - Winning a lot = higher rig factor (luck debuff) (player scoped)
+
  -->
